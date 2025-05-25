@@ -10,7 +10,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 
 #links {
@@ -39,4 +39,26 @@ body {
 
 #header {
     max-width: 1200px;
+}
+
+#table-links {
+    width: 400px;
+    text-align: left;
+    font-size: x-large;
+    color: white;
+}
+
+#table-links a {
+    color: white;
+    text-decoration: none;
+}
+
+#table-links a:hover {
+    background-color: #1f1f1f;
+    cursor: pointer;
+}
+
+#table-row {
+    border: 1px solid #ddd;
+    padding: 8px;
 }

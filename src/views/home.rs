@@ -1,4 +1,5 @@
-use crate::components::{Search, Dashboard};
+use crate::components::Dashboard;
+use crate::components::Search;
 use dioxus::prelude::*;
 
 /// The Home page component that will be rendered when the current route is `[Route::Home]`

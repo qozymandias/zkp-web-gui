@@ -1,14 +1,13 @@
-// The dioxus prelude contains a ton of common items used in dioxus apps. It's a good idea to import wherever you
-// need dioxus
 use dioxus::prelude::*;
 use views::Blog;
 use views::Home;
 use views::Navbar;
 
-/// Define a components module that contains all shared components for our app.
 mod components;
-/// Define a views module that contains the UI for all Layouts and Routes for our app.
 mod views;
+mod config;
+mod types;
+mod utils;
 
 /// The Route enum is used to define the structure of internal routes in our app. All route enums need to derive
 /// the [`Routable`] trait, which provides the necessary methods for the router to work.
@@ -40,6 +39,8 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 
 fn main() {
+    let config = config::load_config("config.toml").expect("Should load config");
+    config::set_config(config);
     // The `launch` function is the main entry point for a dioxus app. It takes a component and renders it with the platform feature
     // you have enabled
     dioxus::launch(App);
