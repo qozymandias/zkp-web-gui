@@ -10,15 +10,12 @@ use crate::utils::table::SimpleTable;
 #[component]
 pub fn Dashboard() -> Element {
     let mut tasks = use_signal(|| None::<Vec<ConciseTask>>);
-    let mut eprint = use_signal(String::new);
 
     use_future(move || async move {
         match get_tasklist().await {
             Ok(data) => tasks.set(Some(data.result.data)),
-            Err(e) => {
-                println!("Failed to fetch items: {}", e);
+            Err(_) => {
                 tasks.set(None);
-                eprint.set(e.to_string());
             }
         }
     });

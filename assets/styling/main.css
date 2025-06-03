@@ -42,14 +42,13 @@ body {
 }
 
 #table-links {
-    width: 400px;
-    text-align: left;
-    font-size: x-large;
+    text-align: center;
+    font-size: 1vw;
     color: white;
 }
 
 #table-links a {
-    color: white;
+    color: #51BDFB;
     text-decoration: none;
 }
 
@@ -61,4 +60,22 @@ body {
 #table-row {
     border: 1px solid #ddd;
     padding: 8px;
+}
+
+#status-container {
+  width: 100%;
+  height: 200px;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+#status-rounded-box {
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  background-color: black;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  padding: 0.1rem;
+  color: white;
 }

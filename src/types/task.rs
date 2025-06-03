@@ -46,6 +46,37 @@ pub enum TaskStatus {
     Stale,
 }
 
+impl From<&str> for TaskStatus {
+    fn from(value: &str) -> Self {
+        match value {
+            "Pending" => TaskStatus::Pending,
+            "Processing" => TaskStatus::Processing,
+            "DryRunSuccess" => TaskStatus::DryRunSuccess,
+            "DryRunFailed" => TaskStatus::DryRunFailed,
+            "Done" => TaskStatus::Done,
+            "Fail" => TaskStatus::Fail,
+            "Unprovable" => TaskStatus::Unprovable,
+            "Stale" => TaskStatus::Stale,
+            _ => unreachable!("Conversion should never be allowed"),
+        }
+    }
+}
+
+impl TaskStatus {
+    pub fn to_background_color(&self) -> &str {
+        match self {
+            TaskStatus::Pending => "#CA9B00",
+            TaskStatus::Processing => "#CA9B00",
+            TaskStatus::DryRunSuccess => "#CA9B00",
+            TaskStatus::DryRunFailed => "#DD6B00",
+            TaskStatus::Done => "#3E8166",
+            TaskStatus::Fail => "#DD6B00",
+            TaskStatus::Unprovable => "red",
+            TaskStatus::Stale => "#636363",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TaskType {
     Setup,

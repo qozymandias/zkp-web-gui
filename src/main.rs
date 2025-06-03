@@ -4,10 +4,10 @@ use views::Home;
 use views::Navbar;
 
 mod components;
-mod views;
 mod config;
 mod types;
 mod utils;
+mod views;
 
 /// The Route enum is used to define the structure of internal routes in our app. All route enums need to derive
 /// the [`Routable`] trait, which provides the necessary methods for the router to work.
@@ -39,7 +39,8 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 
 fn main() {
-    let config = config::load_config("config.toml").expect("Should load config");
+    console_error_panic_hook::set_once();
+    let config = config::load_config().expect("Should load config");
     config::set_config(config);
     // The `launch` function is the main entry point for a dioxus app. It takes a component and renders it with the platform feature
     // you have enabled
@@ -52,6 +53,8 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
+    tracing::info!("ZKP Web App started!");
+
     // The `rsx!` macro lets us define HTML inside of rust. It expands to an Element with all of our HTML inside.
     rsx! {
         // In addition to element and text (which we will see later), rsx can contain other components. In this case,

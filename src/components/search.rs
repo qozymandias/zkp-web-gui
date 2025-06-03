@@ -10,7 +10,7 @@ pub fn Search() -> Element {
     //
     // use_signal is a hook that creates a state for the component. It takes a closure that returns the initial value of the state.
     // The state is automatically tracked and will rerun any other hooks or components that read it whenever it changes.
-    let mut response = use_signal(|| String::new());
+    let mut response = use_signal(String::new);
 
     rsx! {
         document::Link { rel: "stylesheet", href: SEARCH_CSS }
@@ -57,5 +57,6 @@ async fn echo_server(input: String) -> Result<String, ServerFnError> {
     // The body of server function like this comment are only included on the server. If you have any server-only logic like
     // database queries, you can put it here. Any imports for the server function should either be imported inside the function
     // or imported under a `#[cfg(feature = "server")]` block.
+    tracing::info!("{input}");
     Ok(input)
 }

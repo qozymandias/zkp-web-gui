@@ -19,11 +19,11 @@ pub struct ApiConfig {
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub api: ApiConfig,
-    pub port: u32,
 }
 
-pub fn load_config(path: &str) -> anyhow::Result<Config> {
-    let contents = std::fs::read_to_string(path)?;
-    let config = toml::from_str::<Config>(&contents)?;
+const CONFIG_TOML: &str = include_str!("../../config.toml");
+
+pub fn load_config() -> anyhow::Result<Config> {
+    let config = toml::from_str::<Config>(CONFIG_TOML)?;
     Ok(config)
 }

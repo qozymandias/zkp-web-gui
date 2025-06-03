@@ -1,28 +1,76 @@
 use dioxus::prelude::*;
 
+use crate::config::get_config;
 use crate::types::task::ConciseTask;
+use crate::types::task::TaskStatus;
+use crate::utils::link_color;
+use crate::utils::link_formatted;
+use crate::utils::timestamp_formatted;
+
+#[derive(Clone, Debug)]
+pub enum CellStyle {
+    TaskLink,
+    ShortLink,
+    ImageLink,
+    Raw,
+    Timestamp,
+    RoundColoredBox,
+}
+
+#[derive(Clone, Debug)]
+pub struct HeaderType {
+    pub name: String,
+    pub style: CellStyle,
+}
+
+impl Default for HeaderType {
+    fn default() -> Self {
+        HeaderType {
+            name: "Unknown".to_string(),
+            style: CellStyle::Raw,
+        }
+    }
+}
+
+impl HeaderType {
+    fn make_cell(&self, cell: &str) -> Element {
+        match self.style {
+            CellStyle::TaskLink | CellStyle::ShortLink | CellStyle::ImageLink => rsx! {
+                div {
+                    id: "table-links",
+                    a {
+                        color: link_color(&self.style),
+                        href: format!("{}/task/{}", get_config().api.url, cell),
+                        { link_formatted(cell, &self.style) }
+                    }
+                }
+            },
+            CellStyle::Raw => rsx! {
+                div {
+                    text_align: "center",
+                    "{cell}"
+                }
+            },
+            CellStyle::Timestamp => rsx! {
+                div {
+                    text_align: "center",
+                    { timestamp_formatted(cell) }
+                }
+            },
+            CellStyle::RoundColoredBox => rsx! {
+                div {
+                    id: "status-rounded-box", background_color: TaskStatus::from(cell).to_background_color(),
+                    "{cell}"
+                }
+            },
+        }
+    }
+}
 
 pub trait TableLike {
     fn title(&self) -> String;
-    fn headers(&self) -> Vec<String>;
+    fn headers(&self) -> Vec<HeaderType>;
     fn rows(&self) -> Vec<Vec<String>>;
-}
-
-#[derive(Clone, PartialEq)]
-pub struct MockTable;
-
-impl TableLike for MockTable {
-    fn title(&self) -> String {
-        "Mock table example table".to_string()
-    }
-
-    fn headers(&self) -> Vec<String> {
-        ["Task Id", "Address", "Status"].iter().map(|it| it.to_string()).collect()
-    }
-
-    fn rows(&self) -> Vec<Vec<String>> {
-        vec![["111", "222", "Hello"].iter().map(|it| it.to_string()).collect()]
-    }
 }
 
 impl TableLike for Vec<ConciseTask> {
@@ -30,17 +78,20 @@ impl TableLike for Vec<ConciseTask> {
         "Task History".to_string()
     }
 
-    fn headers(&self) -> Vec<String> {
+    fn headers(&self) -> Vec<HeaderType> {
         [
-            "Task Id",
-            "Application Image",
-            "Published By",
-            "Type",
-            "Submit At",
-            "Status",
+            ("Task Id", CellStyle::TaskLink),
+            ("Application Image", CellStyle::ImageLink),
+            ("Published By", CellStyle::ShortLink),
+            ("Type", CellStyle::Raw),
+            ("Submit At", CellStyle::Timestamp),
+            ("Status", CellStyle::RoundColoredBox),
         ]
-        .iter()
-        .map(|it| it.to_string())
+        .into_iter()
+        .map(|(nm, sty)| HeaderType {
+            name: nm.to_string(),
+            style: sty,
+        })
         .collect()
     }
 
@@ -73,27 +124,27 @@ pub fn SimpleTable<T: TableLike + PartialEq + 'static>(data: T) -> Element {
                 style: "border-collapse: collapse; width: 100%;",
                 thead {
                     tr {
-                        {headers.iter().map(|h| rsx!(
+                        {headers.iter().map(|h| {
+                            let name = h.name.clone();
+                            rsx!(
                             th {
                                 id: "table-row",
-                                "{h}"
+                                "{name}"
                             }
-                        ))}
+                        )})}
                     }
                 }
                 tbody {
                     {rows.iter().map(|row| rsx!(
                         tr {
-                            {row.iter().map(|cell| rsx!(
+                            {row.iter().enumerate().map(|(i, cell)| rsx!(
                                 td {
                                     id: "table-row",
-                                    div {
-                                        id: "table-links",
-                                        a {
-                                            href: "https://dioxuslabs.com/learn/0.6/",
-                                            "{cell}"
-                                        }
-                                    }
+                                    { headers.get(i).cloned().unwrap_or_else(||
+                                        {
+                                            tracing::info!("Missing header\nCell is {cell:?}\n Header is {headers:?}\n Rows are {rows:?}\n");
+                                            HeaderType::default()
+                                        }).make_cell(cell) }
                                 }
                             ))}
                         }
