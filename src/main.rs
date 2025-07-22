@@ -5,7 +5,6 @@ use views::Navbar;
 
 mod components;
 mod config;
-mod types;
 mod utils;
 mod views;
 
@@ -40,8 +39,6 @@ const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 
 fn main() {
     console_error_panic_hook::set_once();
-    let config = config::load_config().expect("Should load config");
-    config::set_config(config);
     // The `launch` function is the main entry point for a dioxus app. It takes a component and renders it with the platform feature
     // you have enabled
     dioxus::launch(App);

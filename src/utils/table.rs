@@ -1,11 +1,13 @@
 use dioxus::prelude::*;
+use zkp_service_helper::interface::ConciseTask;
 
-use crate::config::get_config;
-use crate::types::task::ConciseTask;
-use crate::types::task::TaskStatus;
 use crate::utils::link_color;
 use crate::utils::link_formatted;
 use crate::utils::timestamp_formatted;
+use crate::utils::task_status_to_background_color;
+use crate::config::CONFIG;
+
+use super::serde_to_string;
 
 #[derive(Clone, Debug)]
 pub enum CellStyle {
@@ -40,7 +42,7 @@ impl HeaderType {
                     id: "table-links",
                     a {
                         color: link_color(&self.style),
-                        href: format!("{}/task/{}", get_config().api.url, cell),
+                        href: CONFIG.into_href(vec!["task", cell]),
                         { link_formatted(cell, &self.style) }
                     }
                 }
@@ -59,7 +61,7 @@ impl HeaderType {
             },
             CellStyle::RoundColoredBox => rsx! {
                 div {
-                    id: "status-rounded-box", background_color: TaskStatus::from(cell).to_background_color(),
+                    id: "status-rounded-box", background_color: task_status_to_background_color(cell),
                     "{cell}"
                 }
             },
@@ -99,12 +101,12 @@ impl TableLike for Vec<ConciseTask> {
         let mut out = vec![];
         for row in self {
             out.push(vec![
-                row.id.as_ref().map(|id| id.oid.clone()).unwrap_or("Unknown".to_string()),
+                row._id.oid.clone(),
                 row.md5.clone(),
                 row.user_address.clone(),
-                format!("{:?}", row.task_type),
+                serde_to_string(&row.task_type).unwrap_or("Unknown".to_string()),
                 row.submit_time.clone(),
-                format!("{:?}", row.status),
+                serde_to_string(&row.status).unwrap_or("Unknown".to_string()),
             ]);
         }
         out

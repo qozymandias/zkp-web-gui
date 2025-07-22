@@ -1,15 +1,7 @@
-use once_cell::sync::OnceCell;
 use serde::Deserialize;
 
-pub static CONFIG: OnceCell<Config> = OnceCell::new();
-
-pub fn set_config(config_in: Config) {
-    CONFIG.set(config_in).expect("Should set static config variable");
-}
-
-pub fn get_config() -> &'static Config {
-    CONFIG.get().expect("Should get static config variable")
-}
+pub static CONFIG: once_cell::sync::Lazy<Config> =
+    once_cell::sync::Lazy::new(|| load_config().expect("Should load config"));
 
 #[derive(Debug, Deserialize)]
 pub struct ApiConfig {
@@ -19,6 +11,12 @@ pub struct ApiConfig {
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub api: ApiConfig,
+}
+
+impl Config {
+    pub fn into_href(&self, path : Vec<&str>) -> String {
+        format!("{}/{}", self.api.url, path.join("/"))
+    }
 }
 
 const CONFIG_TOML: &str = include_str!("../../config.toml");
