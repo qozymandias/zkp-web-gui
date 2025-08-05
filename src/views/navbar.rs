@@ -1,27 +1,60 @@
 use crate::Route;
 use dioxus::prelude::*;
 
-const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
+const NAVBAR_CSS: Asset = asset!("./assets/styling/navbar.css");
 
-/// The Navbar component that will be rendered on all pages of our app since every page is under the layout.
-///
-///
-/// This layout component wraps the UI of [Route::Home] and [Route::Blog] in a common navbar. The contents of the Home and Blog
-/// routes will be rendered under the outlet inside this component
 #[component]
 pub fn Navbar() -> Element {
+    let mut add_image = use_signal(|| false);
+    let mut add_prove = use_signal(|| false);
+
     rsx! {
         document::Link { rel: "stylesheet", href: NAVBAR_CSS }
 
         div {
             id: "navbar",
             Link {
+                id: "button",
                 to: Route::Home {},
                 "Home"
             }
-            Link {
-                to: Route::Blog { id: 1 },
-                "Blog"
+            // Link {
+            //     to: Route::Blog { id: 1 },
+            //     "Blog"
+            // }
+            button {
+                onclick: move |_| add_image.set(true),
+                "Create New Application"
+            }
+            button {
+                onclick: move |_| add_prove.set(true),
+                "Submit Prove Task"
+            }
+        }
+
+        if add_image() {
+            div { class: "popup-overlay",
+                div { class: "popup-content",
+                    h2 { "About" }
+                    p { "This is a test navbar with modals." }
+                    button {
+                        onclick: move |_| add_image.set(false),
+                        "Close"
+                    }
+                }
+            }
+        }
+
+        if add_prove() {
+            div { class: "popup-overlay",
+                div { class: "popup-content",
+                    h2 { "Help" }
+                    p { "Here's some help text." }
+                    button {
+                        onclick: move |_| add_prove.set(false),
+                        "Close"
+                    }
+                }
             }
         }
 

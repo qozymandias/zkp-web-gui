@@ -16,3 +16,7 @@ pub use blog::Blog;
 
 mod navbar;
 pub use navbar::Navbar;
+
+mod card;
+pub use card::Card;
+pub use card::PairCardsAdjacent;

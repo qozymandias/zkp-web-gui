@@ -4,6 +4,16 @@ use serde::Serialize;
 use table::CellStyle;
 use zkp_service_helper::interface::TaskStatus;
 
+pub fn shorten_md5(it: String) -> String {
+    let l = it.len();
+    format!("{}...{}", &it[0..7], &it[l - 6..l])
+}
+
+pub fn shorten_addresss(it: String) -> String {
+    let l = it.len();
+    format!("{}...{}", &it[0..8], &it[l - 4..l])
+}
+
 pub fn timestamp_formatted(ts: &str) -> String {
     ts.parse::<chrono::DateTime<chrono::Utc>>()
         .unwrap()
@@ -56,7 +66,7 @@ pub fn task_status_to_background_color(status: &str) -> &'static str {
     }
 }
 
-pub fn serde_to_string<T: Serialize>(obj : &T) -> anyhow::Result<String> {
+pub fn serde_to_string<T: Serialize>(obj: &T) -> anyhow::Result<String> {
     Ok(match serde_json::to_value(obj)? {
         serde_json::Value::Bool(v) => v.to_string(),
         serde_json::Value::Number(v) => v.to_string(),
