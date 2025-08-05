@@ -16,7 +16,7 @@
   color: #91a4d2;
 }
 
-button {
+#nav-button {
   background: #0f1116;
   color: white;
   border: none;
@@ -24,7 +24,7 @@ button {
   cursor: pointer;
 }
 
-.popup-overlay {
+#popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -37,7 +37,7 @@ button {
   z-index: 10;
 }
 
-.popup-content {
+#popup-content {
   background: white;
   padding: 2rem;
   border-radius: 8px;

@@ -5,73 +5,9 @@ use zkp_service_helper::interface::ProverNode;
 use zkp_service_helper::interface::Round1Info;
 use zkp_service_helper::interface::Round2Info;
 
-use crate::config::CONFIG;
-use crate::utils::link_color;
-use crate::utils::link_formatted;
-use crate::utils::task_status_to_background_color;
-use crate::utils::timestamp_formatted;
-
-use super::serde_to_string;
-
-#[derive(Clone, Debug)]
-pub enum CellStyle {
-    TaskLink,
-    ShortLink,
-    ImageLink,
-    Raw,
-    Timestamp,
-    RoundColoredBox,
-}
-
-#[derive(Clone, Debug)]
-pub struct HeaderType {
-    pub name: String,
-    pub style: CellStyle,
-}
-
-impl Default for HeaderType {
-    fn default() -> Self {
-        HeaderType {
-            name: "Unknown".to_string(),
-            style: CellStyle::Raw,
-        }
-    }
-}
-
-impl HeaderType {
-    fn make_cell(&self, cell: &str) -> Element {
-        match self.style {
-            CellStyle::TaskLink | CellStyle::ShortLink | CellStyle::ImageLink => rsx! {
-                div {
-                    id: "table-links",
-                    a {
-                        color: link_color(&self.style),
-                        href: CONFIG.into_href(vec!["task", cell]),
-                        { link_formatted(cell, &self.style) }
-                    }
-                }
-            },
-            CellStyle::Raw => rsx! {
-                div {
-                    text_align: "center",
-                    "{cell}"
-                }
-            },
-            CellStyle::Timestamp => rsx! {
-                div {
-                    text_align: "center",
-                    { timestamp_formatted(cell) }
-                }
-            },
-            CellStyle::RoundColoredBox => rsx! {
-                div {
-                    id: "status-rounded-box", background_color: task_status_to_background_color(cell),
-                    "{cell}"
-                }
-            },
-        }
-    }
-}
+use crate::utils::serde_to_string;
+use crate::utils::HeaderType;
+use crate::utils::CellStyle;
 
 pub trait TableLike {
     fn title(&self) -> String;
@@ -248,7 +184,7 @@ impl TableLike for Vec<Round2Info> {
 }
 
 #[component]
-pub fn SimpleTable<T: TableLike + PartialEq + Clone + 'static>(data: T) -> Element {
+pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T) -> Element {
     let title = data.title();
     let headers = data.headers();
     let rows = data.rows();
@@ -287,40 +223,6 @@ pub fn SimpleTable<T: TableLike + PartialEq + Clone + 'static>(data: T) -> Eleme
                     ))}
                 }
             }
-        }
-    }
-}
-
-#[component]
-pub fn SimpleList() -> Element {
-    // TODO: this is placeholder code - rename file to structures or something
-    rsx! {
-        div {
-            style: "display: flex;",
-            div {
-                id: "links",
-                style: "flex: 1; padding: 1rem;",
-                "Left column"
-                a { href: "https://dioxuslabs.com/learn/0.6/", "📚 Learn Dioxus" }
-                a { href: "https://discord.gg/XgGxMSkvUM", "👋 Community Discord" }
-            }
-            div {
-                id: "links",
-                style: "flex: 1; padding: 1rem;",
-                "Right column"
-                a { href: "https://github.com/dioxus-community/", "📡 Community Libraries" }
-                a { href: "https://github.com/DioxusLabs/sdk", "⚙️ Dioxus Development Kit" }
-            }
-        }
-    }
-}
-
-#[component]
-pub fn SimpleText(input: String) -> Element {
-    rsx! {
-        div {
-            style: "display: flex;",
-            "Hello: {input}"
         }
     }
 }

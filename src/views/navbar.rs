@@ -18,23 +18,24 @@ pub fn Navbar() -> Element {
                 to: Route::Home {},
                 "Home"
             }
-            // Link {
-            //     to: Route::Blog { id: 1 },
-            //     "Blog"
-            // }
-            button {
-                onclick: move |_| add_image.set(true),
-                "Create New Application"
-            }
-            button {
-                onclick: move |_| add_prove.set(true),
-                "Submit Prove Task"
+            div {
+                style: "margin-left: auto; width: fit-content;",
+                button {
+                    id: "nav-button",
+                    onclick: move |_| add_image.set(true),
+                    "Create New Application"
+                }
+                button {
+                    id: "nav-button",
+                    onclick: move |_| add_prove.set(true),
+                    "Submit Prove Task"
+                }
             }
         }
 
         if add_image() {
-            div { class: "popup-overlay",
-                div { class: "popup-content",
+            div { id: "popup-overlay",
+                div { id: "popup-content",
                     h2 { "About" }
                     p { "This is a test navbar with modals." }
                     button {
@@ -46,8 +47,8 @@ pub fn Navbar() -> Element {
         }
 
         if add_prove() {
-            div { class: "popup-overlay",
-                div { class: "popup-content",
+            div { id: "popup-overlay",
+                div { id: "popup-content",
                     h2 { "Help" }
                     p { "Here's some help text." }
                     button {

@@ -1,12 +1,15 @@
 use dioxus::prelude::*;
 use zkp_service_helper::helper::ZkWasmServiceHelper;
+use zkp_service_helper::interface::AutoSubmitProof;
 use zkp_service_helper::interface::ConciseTask;
 use zkp_service_helper::interface::ProverNode;
+use zkp_service_helper::interface::Round1Info;
+use zkp_service_helper::interface::Round2Info;
 use zkp_service_helper::interface::TaskType;
 
+use crate::components::card::PairCardsAdjacent;
+use crate::components::table::Table;
 use crate::config::CONFIG;
-use crate::utils::table::SimpleTable;
-use crate::views::PairCardsAdjacent;
 
 static ZKH: once_cell::sync::Lazy<ZkWasmServiceHelper> =
     once_cell::sync::Lazy::new(|| ZkWasmServiceHelper::new(CONFIG.api.url.clone()));
@@ -55,9 +58,42 @@ pub fn Dashboard() -> Element {
         );
     });
 
+    let mut auto_submit_task_history = use_signal(Vec::<AutoSubmitProof>::new);
+    use_future(move || async move {
+        auto_submit_task_history.set(
+            ZKH.query_auto_submit_proofs(None, None, None, None, None, Some(0), Some(5))
+                .await
+                .map(|res| res.data)
+                .unwrap_or(vec![]),
+        );
+    });
+
+    let mut round1_history = use_signal(Vec::<Round1Info>::new);
+    use_future(move || async move {
+        round1_history.set(
+            ZKH.query_round1_info(None, None, None, None, None, None, Some(0), Some(5))
+                .await
+                .map(|res| res.data)
+                .unwrap_or(vec![]),
+        );
+    });
+
+    let mut round2_history = use_signal(Vec::<Round2Info>::new);
+    use_future(move || async move {
+        round2_history.set(
+            ZKH.query_round2_info(None, None, None, None, None, Some(0), Some(5))
+                .await
+                .map(|res| res.data)
+                .unwrap_or(vec![]),
+        );
+    });
+
     rsx! {
         PairCardsAdjacent { left: setups(), right: proves() }
-        SimpleTable { data : provers() }
-        SimpleTable { data : tasks() }
+        Table { data : provers() }
+        Table { data : tasks() }
+        Table { data : auto_submit_task_history() }
+        Table { data : round1_history() }
+        Table { data : round2_history() }
     }
 }

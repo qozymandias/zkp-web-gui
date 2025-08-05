@@ -4,6 +4,7 @@ use zkp_service_helper::interface::ConciseTask;
 use crate::utils::shorten_addresss;
 use crate::utils::shorten_md5;
 use crate::utils::timestamp_formatted;
+use crate::utils::HeaderType;
 
 #[derive(PartialEq, Clone, Props)]
 pub struct SummaryEntryProps {
@@ -119,4 +120,18 @@ pub fn PairCardsAdjacent(left: Vec<ConciseTask>, right: Vec<ConciseTask>) -> Ele
             }
         }
     }
+}
+
+
+pub trait DetailedCardLike {
+    fn title(&self) -> String;
+    fn headers(&self) -> Vec<HeaderType>;
+    fn rows(&self) -> Vec<Vec<String>>;
+}
+
+#[component]
+pub fn DetailedCard<T: DetailedCardLike + PartialEq + Clone + 'static>(data: T) -> Element {
+
+    todo!()
+
 }

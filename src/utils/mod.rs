@@ -1,8 +1,8 @@
-pub mod table;
-
+use dioxus::prelude::*;
 use serde::Serialize;
-use table::CellStyle;
 use zkp_service_helper::interface::TaskStatus;
+
+use crate::config::CONFIG;
 
 pub fn shorten_md5(it: String) -> String {
     let l = it.len();
@@ -73,4 +73,64 @@ pub fn serde_to_string<T: Serialize>(obj: &T) -> anyhow::Result<String> {
         serde_json::Value::String(v) => v,
         _ => return Err(anyhow::anyhow!("Must be primitive object type")),
     })
+}
+
+#[derive(Clone, Debug)]
+pub enum CellStyle {
+    TaskLink,
+    ShortLink,
+    ImageLink,
+    Raw,
+    Timestamp,
+    RoundColoredBox,
+}
+
+#[derive(Clone, Debug)]
+pub struct HeaderType {
+    pub name: String,
+    pub style: CellStyle,
+}
+
+impl Default for HeaderType {
+    fn default() -> Self {
+        HeaderType {
+            name: "Unknown".to_string(),
+            style: CellStyle::Raw,
+        }
+    }
+}
+
+impl HeaderType {
+    pub fn make_cell(&self, cell: &str) -> Element {
+        match self.style {
+            CellStyle::TaskLink | CellStyle::ShortLink | CellStyle::ImageLink => rsx! {
+                div {
+                    id: "table-links",
+                    a {
+                        color: link_color(&self.style),
+                        href: CONFIG.into_href(vec!["task", cell]),
+                        { link_formatted(cell, &self.style) }
+                    }
+                }
+            },
+            CellStyle::Raw => rsx! {
+                div {
+                    text_align: "center",
+                    "{cell}"
+                }
+            },
+            CellStyle::Timestamp => rsx! {
+                div {
+                    text_align: "center",
+                    { timestamp_formatted(cell) }
+                }
+            },
+            CellStyle::RoundColoredBox => rsx! {
+                div {
+                    id: "status-rounded-box", background_color: task_status_to_background_color(cell),
+                    "{cell}"
+                }
+            },
+        }
+    }
 }

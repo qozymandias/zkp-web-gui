@@ -1,7 +1,7 @@
-use crate::components::Dashboard;
 use dioxus::prelude::*;
 
-/// The Home page component that will be rendered when the current route is `[Route::Home]`
+use crate::components::dashboard::Dashboard;
+
 #[component]
 pub fn Home() -> Element {
     rsx! {
