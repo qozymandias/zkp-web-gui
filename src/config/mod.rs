@@ -14,7 +14,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn into_href(&self, path : Vec<&str>) -> String {
+    pub fn into_href(&self, path: Vec<&str>) -> String {
         format!("{}/{}", self.api.url, path.join("/"))
     }
 }

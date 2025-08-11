@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use zkp_service_helper::helper::ZkWasmServiceHelper;
 use zkp_service_helper::interface::AutoSubmitProof;
 use zkp_service_helper::interface::ConciseTask;
 use zkp_service_helper::interface::ProverNode;
@@ -9,10 +8,7 @@ use zkp_service_helper::interface::TaskType;
 
 use crate::components::card::PairCardsAdjacent;
 use crate::components::table::Table;
-use crate::config::CONFIG;
-
-static ZKH: once_cell::sync::Lazy<ZkWasmServiceHelper> =
-    once_cell::sync::Lazy::new(|| ZkWasmServiceHelper::new(CONFIG.api.url.clone()));
+use crate::ZKH;
 
 // const HEADER_SVG: Asset = asset!("/assets/header.svg");
 

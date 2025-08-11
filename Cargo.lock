@@ -7892,7 +7892,7 @@ dependencies = [
 [[package]]
 name = "zkp-service-helper"
 version = "0.1.0"
-source = "git+https://github.com/qozymandias/zkp-service-helper.git#6d633decdbd7f41924dd8e851ffffa453b6371b7"
+source = "git+https://github.com/qozymandias/zkp-service-helper.git#0af15e855b78a8de72589c977f32298e2c8fb63b"
 dependencies = [
  "anyhow",
  "chrono",
@@ -7915,6 +7915,8 @@ dependencies = [
  "console_error_panic_hook",
  "dioxus",
  "getrandom 0.2.16",
+ "hex",
+ "num-bigint",
  "once_cell",
  "reqwest 0.12.22",
  "serde",

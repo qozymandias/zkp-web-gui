@@ -2,8 +2,6 @@ use dioxus::prelude::*;
 use serde::Serialize;
 use zkp_service_helper::interface::TaskStatus;
 
-use crate::config::CONFIG;
-
 pub fn shorten_md5(it: String) -> String {
     let l = it.len();
     format!("{}...{}", &it[0..7], &it[l - 6..l])
@@ -20,6 +18,39 @@ pub fn timestamp_formatted(ts: &str) -> String {
         .with_timezone(&chrono::Local)
         .format("%-I:%M:%S %P")
         .to_string()
+}
+
+pub fn calc_processing_time_secs(start_in: Option<String>, end_in: Option<String>) -> Option<f64> {
+    start_in.zip(end_in).and_then(|(start, end)| {
+        start
+            .parse::<chrono::DateTime<chrono::Utc>>()
+            .inspect_err(|e| tracing::error!("{e}"))
+            .ok()
+            .zip(
+                end.parse::<chrono::DateTime<chrono::Utc>>()
+                    .inspect_err(|e| tracing::error!("{e}"))
+                    .ok(),
+            )
+            .and_then(|(s, e)| {
+                let s_st: std::time::SystemTime = s.into();
+                let e_st: std::time::SystemTime = e.into();
+
+                e_st.duration_since(s_st)
+                    .inspect_err(|e| tracing::error!("{e}"))
+                    .ok()
+                    .map(|x| x.as_secs_f64())
+            })
+    })
+}
+
+pub fn bytes_to_num_string(bytes: Option<Vec<u8>>) -> Option<String> {
+    bytes.map(|b| num_bigint::BigUint::from_bytes_le(&b).to_string())
+}
+
+pub fn bytes_to_bigint(data: &[u8], chunksize: Option<usize>) -> Vec<num_bigint::BigUint> {
+    data.chunks(chunksize.unwrap_or(32))
+        .map(num_bigint::BigUint::from_bytes_le)
+        .collect()
 }
 
 pub fn link_formatted(link: &str, style: &CellStyle) -> String {
@@ -75,7 +106,7 @@ pub fn serde_to_string<T: Serialize>(obj: &T) -> anyhow::Result<String> {
     })
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum CellStyle {
     TaskLink,
     ShortLink,
@@ -85,7 +116,7 @@ pub enum CellStyle {
     RoundColoredBox,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct HeaderType {
     pub name: String,
     pub style: CellStyle,
@@ -106,9 +137,9 @@ impl HeaderType {
             CellStyle::TaskLink | CellStyle::ShortLink | CellStyle::ImageLink => rsx! {
                 div {
                     id: "table-links",
-                    a {
+                    Link {
                         color: link_color(&self.style),
-                        href: CONFIG.into_href(vec!["task", cell]),
+                        to: crate::Route::TaskDetails { id : cell.to_string() },
                         { link_formatted(cell, &self.style) }
                     }
                 }
@@ -132,5 +163,16 @@ impl HeaderType {
                 }
             },
         }
+    }
+
+    pub fn get_header_and_make_cell(headers: &[HeaderType], i: usize, cell: &str) -> Element {
+        headers
+            .get(i)
+            .cloned()
+            .unwrap_or_else(|| {
+                tracing::info!("Missing header\nCell is {cell:?}\nHeader is {headers:?}\nIndex {i}\n");
+                HeaderType::default()
+            })
+            .make_cell(cell)
     }
 }

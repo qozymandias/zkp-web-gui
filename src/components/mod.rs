@@ -1,4 +1,4 @@
-pub mod dashboard;
 pub mod card;
-pub mod table;
+pub mod dashboard;
 pub mod search;
+pub mod table;
