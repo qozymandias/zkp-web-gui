@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
-use views::Home;
+use views::Dashboard;
+use views::ImageDetails;
 use views::Navbar;
 use views::TaskDetails;
 
@@ -24,10 +25,13 @@ fn main() {
 enum Route {
     #[layout(Navbar)]
         #[route("/")]
-        Home {},
+        Dashboard {},
 
         #[route("/task/:id")]
         TaskDetails { id: String },
+
+        #[route("/image/:id")]
+        ImageDetails { id: String },
 }
 
 #[component]

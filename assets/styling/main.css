@@ -163,14 +163,25 @@ body {
     color: #70e0d2;
 }
 
-.setup-entry {
+#setup-entry {
     display: flex;
     justify-content: space-between;
     padding: 3px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    #left {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    #right {
+        text-align: right;
+        flex-direction: column;
+        gap: 4px;
+    }
 }
 
-#detailed-entry {
+.detailed-entry {
     display: flex;
     justify-content: flex-start;
     padding: 5px;
@@ -220,4 +231,86 @@ body {
     span {
         display: block;
     }
+}
+
+.detailed-page-card {
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+}
+
+.task-details-col {
+    width: 22%;
+}
+
+.image-details-col {
+    width: 34%;
+    padding: 3px 10px;
+}
+
+#detail-header {
+    color: white;
+    font-weight: 500;
+    font-size: 20px;
+    border-bottom: 4px solid #2a7e95;
+    display: flex;
+    flex-direction: row;
+
+    #right-div {
+        font-weight: 500;
+        font-size: 18px;
+        text-align: right;
+    }
+
+    div {
+        flex: 1;
+        padding: 5px;
+    }
+}
+
+#adjacent-task-summaries {
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+
+    div {
+        flex: 1;
+        padding: 1px;
+    }
+}
+
+.debug-border-lines {
+    outline: 1px dashed red;
+}
+
+.stretched-nested-div-parent {
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.stretched-nested-div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.pad-5 {
+    padding: 5px;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
 }

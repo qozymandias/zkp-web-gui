@@ -13,12 +13,6 @@ pub struct Config {
     pub api: ApiConfig,
 }
 
-impl Config {
-    pub fn into_href(&self, path: Vec<&str>) -> String {
-        format!("{}/{}", self.api.url, path.join("/"))
-    }
-}
-
 const CONFIG_TOML: &str = include_str!("../../config.toml");
 
 pub fn load_config() -> anyhow::Result<Config> {

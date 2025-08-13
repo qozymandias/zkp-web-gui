@@ -1,3 +1,7 @@
+mod entry;
+
+pub use entry::Entry;
+
 use dioxus::prelude::*;
 use serde::Serialize;
 use zkp_service_helper::interface::TaskStatus;
