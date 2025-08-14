@@ -20,6 +20,7 @@ zkp-service-helper = { git = "https://github.com/qozymandias/zkp-service-helper.
 getrandom = { version = "0.2", features = ["js"] }
 num-bigint = "0.4.6"
 hex = "0.4.3"
+web-time = "1.1.0"
 
 [features]
 default = ["web"]

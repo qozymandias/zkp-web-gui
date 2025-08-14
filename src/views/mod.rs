@@ -9,3 +9,6 @@ pub use task_details::TaskDetails;
 
 mod image_details;
 pub use image_details::ImageDetails;
+
+mod node_details;
+pub use node_details::NodeDetails;

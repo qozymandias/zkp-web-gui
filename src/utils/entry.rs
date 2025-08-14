@@ -2,36 +2,37 @@ use dioxus::prelude::*;
 use zkp_service_helper::interface::AutoSubmitStatus;
 use zkp_service_helper::interface::ImageChecksum;
 use zkp_service_helper::interface::ProofSubmitMode;
-use zkp_service_helper::interface::Task;
+use zkp_service_helper::interface::ProverLevel;
 use zkp_service_helper::interface::TaskStatus;
 use zkp_service_helper::interface::TaskType;
 
-use crate::components::card::EntryListT;
-use crate::components::card::EntryT;
+use crate::components::card::EntryLike;
 use crate::utils::bytes_to_bigint;
-use crate::utils::bytes_to_num_string;
-use crate::utils::calc_processing_time_secs;
 use crate::utils::serde_to_string;
 use crate::utils::timestamp_formatted;
 
 #[derive(Clone, PartialEq)]
-pub enum Entry {
+pub enum ZkEntry {
     Raw(String),
     Logs(String),
     TaskType(TaskType),
     TaskStatus(TaskStatus),
     ProofMode(ProofSubmitMode),
     BatchProof(Option<AutoSubmitStatus>),
+    ProverLevel(ProverLevel),
     Timestamp(String),
-    MD5LinkRoundedBox(String),
-    AddressLinkRoundedBox(String),
+    MaybeTimestamp(Option<String>),
+    MD5(String),
+    NodeAddress(String),
+    UserAddress(String),
+    MaybeTaskId(Option<String>),
     LongInput(Vec<String>),
     DownloadButton(String),
     Bytes(Vec<u8>, Option<usize>),
     Checksum(Option<ImageChecksum>),
 }
 
-impl EntryT for Entry {
+impl EntryLike for ZkEntry {
     fn into_cell(self) -> Element {
         match self {
             Self::Raw(cell) => rsx! {
@@ -44,7 +45,11 @@ impl EntryT for Entry {
                     { timestamp_formatted(&cell) }
                 }
             },
-            Self::MD5LinkRoundedBox(cell) => rsx! {
+            Self::MaybeTimestamp(cell) => match cell {
+                Some(ts) => Self::Timestamp(ts).into_cell(),
+                None => Self::Raw("N/A".to_string()).into_cell(),
+            },
+            Self::MD5(cell) => rsx! {
                 div {
                     id: "link-pill-box",
                     Link {
@@ -54,15 +59,38 @@ impl EntryT for Entry {
                     }
                 }
             },
-            Self::AddressLinkRoundedBox(cell) => rsx! {
+            Self::NodeAddress(cell) => rsx! {
                 div {
                     id: "link-pill-box",
                     Link {
                         color: "white",
-                        to: crate::Route::TaskDetails { id : cell.to_string() },
+                        to: crate::Route::NodeDetails { id : cell.to_string() },
                         "{cell}"
                     }
                 }
+            },
+            Self::UserAddress(cell) => rsx! {
+                div {
+                    id: "link-pill-box",
+                    Link {
+                        color: "white",
+                        to: crate::Route::NodeDetails { id : cell.to_string() },
+                        "{cell}"
+                    }
+                }
+            },
+            Self::MaybeTaskId(cell) => match cell {
+                Some(c) => rsx! {
+                    div {
+                        id: "link-pill-box",
+                        Link {
+                            color: "white",
+                            to: crate::Route::TaskDetails { id : c.clone() },
+                            "{c}"
+                        }
+                    }
+                },
+                None => Self::Raw("N/A".to_string()).into_cell(),
             },
             Self::DownloadButton(_cell) => rsx! {
                 div {
@@ -96,6 +124,7 @@ impl EntryT for Entry {
             Self::TaskStatus(cell) => Self::Raw(serde_to_string(&cell).unwrap_or("NA".to_string())).into_cell(),
             Self::ProofMode(cell) => Self::Raw(serde_to_string(&cell).unwrap_or("NA".to_string())).into_cell(),
             Self::BatchProof(cell) => Self::Raw(serde_to_string(&cell).unwrap_or("NA".to_string())).into_cell(),
+            Self::ProverLevel(cell) => Self::Raw(serde_to_string(&cell).unwrap_or("NA".to_string())).into_cell(),
             Self::Checksum(cell) => {
                 let x = cell
                     .as_ref()
@@ -114,76 +143,5 @@ impl EntryT for Entry {
                 }
             }
         }
-    }
-}
-
-impl EntryListT for Option<Task> {
-    type T = Entry;
-
-    fn title(&self) -> String {
-        "Task Overview".to_string()
-    }
-
-    fn entries(&self) -> Vec<(&str, Entry)> {
-        self.as_ref()
-            .map(|it| {
-                vec![
-                    ("Application", Entry::MD5LinkRoundedBox(it.md5.clone())),
-                    ("Type", Entry::TaskType(it.task_type.clone())),
-                    ("Status", Entry::TaskStatus(it.status.clone())),
-                    ("Submitted at", Entry::Timestamp(it.submit_time.clone())),
-                    ("Submitted by", Entry::AddressLinkRoundedBox(it.user_address.clone())),
-                    (
-                        "Task taken by Node",
-                        Entry::AddressLinkRoundedBox(it.node_address.clone().unwrap_or("NA".to_string())),
-                    ),
-                    (
-                        "Processing Started",
-                        Entry::Timestamp(it.process_started.clone().unwrap_or("NA".to_string())),
-                    ),
-                    (
-                        "Processing Finished",
-                        Entry::Timestamp(it.process_finished.clone().unwrap_or("NA".to_string())),
-                    ),
-                    (
-                        "Processing Time",
-                        Entry::Raw(
-                            calc_processing_time_secs(it.process_started.clone(), it.process_finished.clone())
-                                .map(|dur| format!("{dur} seconds"))
-                                .unwrap_or("NA".to_string()),
-                        ),
-                    ),
-                    (
-                        "Task Fee",
-                        Entry::Raw(bytes_to_num_string(it.task_fee.clone()).unwrap_or("NA".to_string())),
-                    ),
-                    ("Debug Logs", Entry::Logs(it.debug_logs.clone().unwrap_or("NA".to_string()))),
-                    (
-                        "Guest Statics",
-                        Entry::Raw(it.guest_statics.map(|x| x.to_string()).unwrap_or("NA".to_string())),
-                    ),
-                    (
-                        "Proof Submit Mode",
-                        Entry::ProofMode(
-                            it.proof_submit_mode
-                                .clone()
-                                .unwrap_or(zkp_service_helper::interface::ProofSubmitMode::Manual),
-                        ),
-                    ),
-                    ("Current Batch Status", Entry::BatchProof(it.auto_submit_status.clone())),
-                    ("Public Inputs", Entry::LongInput(it.public_inputs.clone())),
-                    ("Witness", Entry::LongInput(it.private_inputs.clone())),
-                    ("External Host Table", Entry::DownloadButton(it._id.oid.clone())),
-                    ("Input Context", Entry::Bytes(it.input_context.clone(), Some(8))),
-                    ("Context Output", Entry::Bytes(it.output_context.clone(), Some(8))),
-                    ("Single Proof Transcripts", Entry::Bytes(it.single_proof.clone(), None)),
-                    ("Instances", Entry::Bytes(it.instances.clone(), None)),
-                    ("Batched Proof Transcripts", Entry::Bytes(it.proof.clone(), None)),
-                    ("Shadow Instances", Entry::Bytes(it.shadow_instances.clone(), None)),
-                    ("Batch Instances", Entry::Bytes(it.batch_instances.clone(), None)),
-                    ("Aux Data", Entry::Bytes(it.aux.clone(), None)),
-                ]
-            })
-            .unwrap_or_default()
     }
 }

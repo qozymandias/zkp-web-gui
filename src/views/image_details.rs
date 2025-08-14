@@ -8,9 +8,9 @@ use zkp_service_helper::interface::TaskType;
 
 use crate::components::card::Card;
 use crate::components::card::EntryListCard;
-use crate::components::card::EntryListT;
+use crate::components::card::EntryListLike;
 use crate::components::table::Table;
-use crate::utils::Entry;
+use crate::utils::ZkEntry;
 use crate::ZKH;
 
 #[derive(Clone, PartialEq)]
@@ -30,18 +30,10 @@ impl DetailedImage {
         task_in: Signal<Option<ConciseTask>>,
         proofs_submitted_in: Signal<Option<u64>>,
     ) -> Option<Self> {
-        let Some(image) = image_in.read().as_ref().cloned() else {
-            return None;
-        };
-        let Some(config) = config_in.read().as_ref().cloned() else {
-            return None;
-        };
-        let Some(task) = task_in.read().as_ref().cloned() else {
-            return None;
-        };
-        let Some(proofs_submitted) = proofs_submitted_in.read().as_ref().cloned() else {
-            return None;
-        };
+        let image = image_in.read().as_ref().cloned()?;
+        let config = config_in.read().as_ref().cloned()?;
+        let task = task_in.read().as_ref().cloned()?;
+        let proofs_submitted = proofs_submitted_in.read().as_ref().cloned()?;
 
         let networks = config
             .chain_info_list
@@ -69,29 +61,32 @@ impl DetailedImage {
     }
 }
 
-impl EntryListT for Option<DetailedImage> {
-    type T = Entry;
+impl EntryListLike for Option<DetailedImage> {
+    type T = ZkEntry;
 
     fn title(&self) -> String {
         "Overview".to_string()
     }
 
-    fn entries(&self) -> Vec<(&str, Entry)> {
+    fn entries(&self) -> Vec<(&str, ZkEntry)> {
         self.as_ref()
             .map(|it| {
                 vec![
-                    ("Owner", Entry::AddressLinkRoundedBox(it.image.user_address.clone())),
-                    ("Created On", Entry::Timestamp(it.submit_time.clone())),
-                    ("Auto Submit Proof Network(s)", Entry::Raw(it.networks.join(" "))),
-                    ("Circuit Size", Entry::Raw(it.image.circuit_size.to_string())),
-                    ("Creator Paid Proof", Entry::Raw(it.creator_paid_proof.clone())),
-                    ("Only image creator can add prove task", Entry::Raw(it.only_creator_add.clone())),
-                    ("Proofs submitted", Entry::Raw(it.proofs_submitted.to_string())),
-                    ("Image Commitment", Entry::Checksum(it.image.checksum.clone())),
-                    ("Image Status", Entry::Raw(it.image.status.clone())),
+                    ("Owner", ZkEntry::UserAddress(it.image.user_address.clone())),
+                    ("Created On", ZkEntry::Timestamp(it.submit_time.clone())),
+                    ("Auto Submit Proof Network(s)", ZkEntry::Raw(it.networks.join(" "))),
+                    ("Circuit Size", ZkEntry::Raw(it.image.circuit_size.to_string())),
+                    ("Creator Paid Proof", ZkEntry::Raw(it.creator_paid_proof.clone())),
+                    (
+                        "Only image creator can add prove task",
+                        ZkEntry::Raw(it.only_creator_add.clone()),
+                    ),
+                    ("Proofs submitted", ZkEntry::Raw(it.proofs_submitted.to_string())),
+                    ("Image Commitment", ZkEntry::Checksum(it.image.checksum.clone())),
+                    ("Image Status", ZkEntry::Raw(it.image.status.clone())),
                     (
                         "Shared Data Image",
-                        Entry::Raw(
+                        ZkEntry::Raw(
                             it.image
                                 .inherited_merkle_data_info
                                 .as_ref()
@@ -158,8 +153,23 @@ pub fn ImageDetails(id: String) -> Element {
     });
 
     let desc = image.as_ref().map(|it| it.description_url.clone()).unwrap_or("NA".to_string());
+    let left = format!("Image Hash {}", md5);
+    let right = image.as_ref().map(|it| it.user_address.clone()).unwrap_or("NA".to_string());
 
     rsx! {
+        div {
+            style: "padding: 2rem;",
+            div {
+                id: "detail-header",
+                div {
+                    "{left}"
+                }
+                div {
+                    id: "right-div",
+                    "{right}"
+                }
+            },
+        }
         div {
             class: "stretched-nested-div-parent",
             div {

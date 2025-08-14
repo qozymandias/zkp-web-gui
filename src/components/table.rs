@@ -68,7 +68,7 @@ impl TableLike for Vec<ProverNode> {
             ("Failed Tasks", CellStyle::Raw),
             ("Total Tasks", CellStyle::Raw),
             ("Last Proof Time", CellStyle::Raw),
-            ("Last Proof Timestamp", CellStyle::Timestamp),
+            ("Last Proof Timestamp", CellStyle::TimestampAlt),
         ])
     }
 
@@ -80,7 +80,12 @@ impl TableLike for Vec<ProverNode> {
                     row.statistics.successful_tasks.to_string(),
                     row.statistics.failed_tasks.to_string(),
                     row.statistics.total_tasks.to_string(),
-                    row.statistics.last_timed_out.clone().unwrap_or("NA".to_string()),
+                    // TODO: this should be last proof time taken
+                    row.statistics
+                        .proof_timing_stats
+                        .as_ref()
+                        .map(|t| format!("{:.4}", t.latest_time_taken_secs))
+                        .unwrap_or("NA".to_string()),
                     row.last_attempted_task
                         .as_ref()
                         .map(|t| t.timestamp.clone())
@@ -100,9 +105,9 @@ impl TableLike for Vec<AutoSubmitProof> {
         Self::into_header_type(vec![
             ("Proof Task ID", CellStyle::TaskLink),
             ("Batch Status", CellStyle::Raw),
-            ("Target Proof Submitted", CellStyle::Timestamp),
+            ("Target Proof Submitted", CellStyle::TimestampAlt),
             ("Network", CellStyle::Raw),
-            ("Batch Finished", CellStyle::Raw),
+            ("Batch Finished", CellStyle::TimestampAlt),
         ])
     }
 
@@ -130,9 +135,9 @@ impl TableLike for Vec<Round1Info> {
         Self::into_header_type(vec![
             ("Round 1 Proof ID", CellStyle::TaskLink),
             ("Batch Status", CellStyle::Raw),
-            ("Target Proof Submitted", CellStyle::Timestamp),
+            ("Target Proof Submitted", CellStyle::TimestampAlt),
             ("Network", CellStyle::Raw),
-            ("Batch Finished", CellStyle::Raw),
+            ("Batch Finished", CellStyle::TimestampAlt),
         ])
     }
 
@@ -159,7 +164,7 @@ impl TableLike for Vec<Round2Info> {
     fn headers(&self) -> Vec<HeaderType> {
         [
             ("Round 2 Proof ID", CellStyle::TaskLink),
-            ("Batch Finished At", CellStyle::Raw),
+            ("Batch Finished At", CellStyle::TimestampAlt),
             ("Aggregator Verifier ", CellStyle::Raw),
         ]
         .into_iter()
@@ -183,34 +188,6 @@ impl TableLike for Vec<Round2Info> {
     }
 }
 
-pub fn into_table_header(headers: &[HeaderType]) -> Element {
-    rsx! {
-        tr { {
-            headers.iter().map(|h| h.name.clone()).map(|name| rsx!{
-                th {
-                    id: "table-row",
-                    "{name}"
-                }
-            })
-        } }
-    }
-}
-
-pub fn into_table_body(rows: Vec<Vec<String>>, headers: &[HeaderType]) -> Element {
-    rsx! { {
-        rows.iter().map(|row| rsx!{
-            tr { {
-                row.iter().enumerate().map(|(i, cell)| rsx!{
-                    td {
-                        id: "table-row",
-                        { HeaderType::get_header_and_make_cell(headers, i, cell) }
-                    }
-                })
-            } }
-        })
-    } }
-}
-
 #[component]
 pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T) -> Element {
     let title = data.title();
@@ -223,8 +200,34 @@ pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T) -> Element {
             h1 { "{title}" }
             table {
                 style: "border-collapse: collapse; width: 100%;",
-                thead { { into_table_header(&headers) } }
-                tbody { { into_table_body(rows, &headers) } }
+                thead {
+                    tr {
+                        {
+                            headers.iter().map(|h| h.name.clone()).map(|name| rsx!{
+                                th {
+                                    id: "table-row",
+                                    "{name}"
+                                }
+                            })
+                        }
+                    }
+                }
+                tbody {
+                    {
+                        rows.iter().map(|row| rsx!{
+                            tr {
+                                {
+                                    row.iter().enumerate().map(|(i, cell)| rsx!{
+                                        td {
+                                            id: "table-row",
+                                            { HeaderType::get_header_and_make_cell(&headers, i, cell) }
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                    }
+                }
             }
         }
     }

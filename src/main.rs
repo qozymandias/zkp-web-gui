@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 use views::Dashboard;
 use views::ImageDetails;
 use views::Navbar;
+use views::NodeDetails;
 use views::TaskDetails;
 
 mod components;
@@ -32,6 +33,9 @@ enum Route {
 
         #[route("/image/:id")]
         ImageDetails { id: String },
+
+        #[route("/node/:id")]
+        NodeDetails { id: String },
 }
 
 #[component]

@@ -116,6 +116,10 @@ body {
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+.transparent-border {
+    border: 2px transparent !important;
+}
+
 .card-header {
     background-color: rgba(0, 0, 0, 0) !important;
     border-bottom: none !important;
@@ -245,6 +249,20 @@ body {
 
 .image-details-col {
     width: 34%;
+    padding: 3px 10px;
+}
+
+.node-details-header {
+    text-align: left;
+}
+
+.node-details-wrapper {
+    padding: 0rem 2rem;
+    padding-bottom: 0.1rem;
+}
+
+.node-details-col {
+    width: 24%;
     padding: 3px 10px;
 }
 
