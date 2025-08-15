@@ -1,14 +1,11 @@
-mod dashboard;
-pub use dashboard::Dashboard;
+mod home;
+pub use home::dashboard::Dashboard;
 
 mod navbar;
 pub use navbar::Navbar;
 
-mod task_details;
-pub use task_details::TaskDetails;
-
-mod image_details;
-pub use image_details::ImageDetails;
-
-mod node_details;
-pub use node_details::NodeDetails;
+mod detailed;
+pub use detailed::image::ImageDetails;
+pub use detailed::node::NodeDetails;
+pub use detailed::task::TaskDetails;
+pub use detailed::user::UserDetails;

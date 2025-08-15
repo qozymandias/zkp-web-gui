@@ -21,6 +21,7 @@ getrandom = { version = "0.2", features = ["js"] }
 num-bigint = "0.4.6"
 hex = "0.4.3"
 web-time = "1.1.0"
+num-traits = "0.2.19"
 
 [features]
 default = ["web"]

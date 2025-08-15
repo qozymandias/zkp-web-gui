@@ -4,7 +4,11 @@ use zkp_service_helper::interface::ProverNodeTimeRangeStats;
 
 use crate::components::card::EntryListCard;
 use crate::components::card::EntryListLike;
+use crate::utils::serde_to_string;
 use crate::utils::webtime_to_rfc3339;
+use crate::utils::AddressKind;
+use crate::utils::AddressStyle;
+use crate::utils::TimestampStyle;
 use crate::utils::UnwrapOrNA;
 use crate::utils::ZkEntry;
 use crate::ZKH;
@@ -27,12 +31,18 @@ impl EntryListLike for GeneralNodeDetails {
         };
         let stats = &node.statistics;
         vec![
-            ("Address", ZkEntry::NodeAddress(node.address.clone())),
+            (
+                "Address",
+                ZkEntry::Address(node.address.clone(), AddressStyle::Detailed, AddressKind::Node),
+            ),
             (
                 "Latest Node Version Used",
                 ZkEntry::Raw(node.version_info.as_ref().map(|it| it.version.clone()).unwrap_or_na()),
             ),
-            ("Prover Level", ZkEntry::ProverLevel(node.prover_level.clone())),
+            (
+                "Prover Level",
+                ZkEntry::Raw(serde_to_string(&node.prover_level).ok().unwrap_or_na()),
+            ),
             (
                 "Status",
                 ZkEntry::Raw(
@@ -45,11 +55,18 @@ impl EntryListLike for GeneralNodeDetails {
             ("Performance Track", ZkEntry::Raw(node.performance_track.clone())),
             (
                 "Last Attempted Task",
-                ZkEntry::MaybeTaskId(node.last_attempted_task.as_ref().map(|it| it.task_id.oid.clone())),
+                ZkEntry::MaybeAddress(
+                    node.last_attempted_task.as_ref().map(|it| it.task_id.oid.clone()),
+                    AddressStyle::Detailed,
+                    AddressKind::Task,
+                ),
             ),
             (
                 "Last Attempted Task Timestamp",
-                ZkEntry::MaybeTimestamp(node.last_attempted_task.as_ref().map(|it| it.timestamp.clone())),
+                ZkEntry::Timestamp(
+                    node.last_attempted_task.as_ref().map(|it| it.timestamp.clone()),
+                    TimestampStyle::Full,
+                ),
             ),
             ("Total Tasks Taken", ZkEntry::Raw(stats.total_tasks.to_string())),
             (
@@ -82,24 +99,29 @@ impl EntryListLike for FailureNodeDetails {
             ("Timed Out Tasks", ZkEntry::Raw(stats.timed_out_count.to_string())),
             (
                 "Last Timed Out Timestamp",
-                ZkEntry::MaybeTimestamp(stats.last_timed_out.clone()),
+                ZkEntry::Timestamp(stats.last_timed_out.clone(), TimestampStyle::Full),
             ),
             (
                 "Last Timed Out Task Id",
-                ZkEntry::MaybeTaskId(stats.last_timed_out_task_id.as_ref().map(|it| it.oid.clone())),
+                ZkEntry::MaybeAddress(
+                    stats.last_timed_out_task_id.as_ref().map(|it| it.oid.clone()),
+                    AddressStyle::Detailed,
+                    AddressKind::Task,
+                ),
             ),
             (
                 "Last Failed Task Timestamp",
-                ZkEntry::MaybeTimestamp(stats.last_failed_ts.clone()),
+                ZkEntry::Timestamp(stats.last_failed_ts.clone(), TimestampStyle::Full),
             ),
             (
                 "Last Failed Task Id",
-                ZkEntry::MaybeTaskId(stats.last_failed_task_id.as_ref().map(|it| it.oid.clone())),
+                ZkEntry::MaybeAddress(
+                    stats.last_failed_task_id.as_ref().map(|it| it.oid.clone()),
+                    AddressStyle::Detailed,
+                    AddressKind::Task,
+                ),
             ),
-            (
-                "Last Failed Task Logs",
-                ZkEntry::Logs(stats.last_failed_task_log.unwrap_or_na()),
-            ),
+            ("Last Failed Task Logs", ZkEntry::Logs(stats.last_failed_task_log.clone())),
         ]
     }
 }
@@ -121,7 +143,11 @@ impl EntryListLike for SuccessfulSetupNodeStats {
         vec![
             (
                 "Last Successful Task",
-                ZkEntry::MaybeTaskId(stats.and_then(|it| it.latest_task_id.as_ref().map(|it| it.oid.clone()))),
+                ZkEntry::MaybeAddress(
+                    stats.and_then(|it| it.latest_task_id.as_ref().map(|it| it.oid.clone())),
+                    AddressStyle::Detailed,
+                    AddressKind::Task,
+                ),
             ),
             (
                 "Latest Processing Time",
@@ -133,7 +159,7 @@ impl EntryListLike for SuccessfulSetupNodeStats {
             ),
             (
                 "Latest Timestamp",
-                ZkEntry::MaybeTimestamp(stats.and_then(|it| it.latest_timestamp.clone())),
+                ZkEntry::Timestamp(stats.and_then(|it| it.latest_timestamp.clone()), TimestampStyle::Full),
             ),
         ]
     }
@@ -156,7 +182,11 @@ impl EntryListLike for SuccessfulProveNodeStats {
         vec![
             (
                 "Last Successful Task",
-                ZkEntry::MaybeTaskId(stats.and_then(|it| it.latest_task_id.as_ref().map(|it| it.oid.clone()))),
+                ZkEntry::MaybeAddress(
+                    stats.and_then(|it| it.latest_task_id.as_ref().map(|it| it.oid.clone())),
+                    AddressStyle::Detailed,
+                    AddressKind::Task,
+                ),
             ),
             (
                 "Latest Processing Time",
@@ -168,7 +198,7 @@ impl EntryListLike for SuccessfulProveNodeStats {
             ),
             (
                 "Latest Timestamp",
-                ZkEntry::MaybeTimestamp(stats.and_then(|it| it.latest_timestamp.clone())),
+                ZkEntry::Timestamp(stats.and_then(|it| it.latest_timestamp.clone()), TimestampStyle::Full),
             ),
         ]
     }
@@ -196,6 +226,20 @@ impl EntryListLike for LastMonthsNodeStats {
             ("Failed Tasks Number", ZkEntry::Raw(stats.stats.failed.to_string())),
             ("Timed Out Tasks Number", ZkEntry::Raw(stats.stats.timed_out.to_string())),
         ]
+    }
+}
+
+fn make_node_details_div<U: EntryListLike + PartialEq + Clone + 'static>(data: U) -> Element {
+    rsx! {
+        div {
+            class: "node-details-wrapper",
+            EntryListCard {
+                data,
+                card_class: "transparent-border",
+                header_class: "node-details-header",
+                lcol_class: "node-details-col",
+            }
+        }
     }
 }
 
@@ -235,71 +279,18 @@ pub fn NodeDetails(id: String) -> Element {
     });
 
     let node_details = node();
-    let address = id.clone();
     rsx! {
         div {
             style: "padding: 2rem;",
             div {
                 id: "detail-header",
-                div {
-                    "{address}"
-                }
+                div { "{id}" }
             },
         }
-        div {
-            class: "node-details-wrapper",
-            EntryListCard {
-                data: GeneralNodeDetails {
-                    node: node_details.clone(),
-                },
-                card_class: "transparent-border",
-                header_class: "node-details-header",
-                lcol_class: "node-details-col",
-            }
-        }
-        div {
-            class: "node-details-wrapper",
-            EntryListCard {
-                data: FailureNodeDetails {
-                    node: node_details.clone(),
-                },
-                card_class: "transparent-border",
-                header_class: "node-details-header",
-                lcol_class: "node-details-col",
-            }
-        }
-        div {
-            style: "padding: 0.1rem 2rem;",
-            EntryListCard {
-                data: SuccessfulSetupNodeStats {
-                    node: node_details.clone(),
-                },
-                card_class: "transparent-border",
-                header_class: "node-details-header",
-                lcol_class: "node-details-col",
-            }
-        }
-        div {
-            style: "padding: 0.1rem 2rem;",
-            EntryListCard {
-                data: SuccessfulProveNodeStats {
-                    node: node_details.clone(),
-                },
-                card_class: "transparent-border",
-                header_class: "node-details-header",
-                lcol_class: "node-details-col",
-            }
-        }
-        div {
-            style: "padding: 0.1rem 2rem;",
-            EntryListCard {
-                data: LastMonthsNodeStats {
-                    timerange_stats: stats(),
-                },
-                card_class: "transparent-border",
-                header_class: "node-details-header",
-                lcol_class: "node-details-col",
-            }
-        }
+        { make_node_details_div( GeneralNodeDetails { node : node_details.clone() }) }
+        { make_node_details_div( FailureNodeDetails { node : node_details.clone() }) }
+        { make_node_details_div( SuccessfulSetupNodeStats { node : node_details.clone() }) }
+        { make_node_details_div( SuccessfulProveNodeStats { node : node_details.clone() }) }
+        { make_node_details_div( LastMonthsNodeStats { timerange_stats: stats() }) }
     }
 }

@@ -208,9 +208,9 @@ checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
 
 [[package]]
 name = "async-trait"
-version = "0.1.88"
+version = "0.1.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e539d3fca749fcee5236ab05e93a52867dd549cc157c8cb7f99595f3cedffdb5"
+checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7902,7 +7902,7 @@ dependencies = [
 [[package]]
 name = "zkp-service-helper"
 version = "0.1.0"
-source = "git+https://github.com/qozymandias/zkp-service-helper.git#c2818a77c7cce0dca70e074777e75dfc08984ec6"
+source = "git+https://github.com/qozymandias/zkp-service-helper.git#8cd09b92c229b631ba015d1103723fd426f9d065"
 dependencies = [
  "anyhow",
  "ethers",
@@ -7926,6 +7926,7 @@ dependencies = [
  "getrandom 0.2.16",
  "hex",
  "num-bigint",
+ "num-traits",
  "once_cell",
  "reqwest 0.12.23",
  "serde",

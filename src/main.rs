@@ -4,6 +4,7 @@ use views::ImageDetails;
 use views::Navbar;
 use views::NodeDetails;
 use views::TaskDetails;
+use views::UserDetails;
 
 mod components;
 mod config;
@@ -36,6 +37,9 @@ enum Route {
 
         #[route("/node/:id")]
         NodeDetails { id: String },
+
+        #[route("/user/:id")]
+        UserDetails { id: String },
 }
 
 #[component]

@@ -10,6 +10,9 @@ use crate::components::card::Card;
 use crate::components::card::EntryListCard;
 use crate::components::card::EntryListLike;
 use crate::components::table::Table;
+use crate::utils::AddressKind;
+use crate::utils::AddressStyle;
+use crate::utils::TimestampStyle;
 use crate::utils::ZkEntry;
 use crate::ZKH;
 
@@ -72,8 +75,14 @@ impl EntryListLike for Option<DetailedImage> {
         self.as_ref()
             .map(|it| {
                 vec![
-                    ("Owner", ZkEntry::UserAddress(it.image.user_address.clone())),
-                    ("Created On", ZkEntry::Timestamp(it.submit_time.clone())),
+                    (
+                        "Owner",
+                        ZkEntry::Address(it.image.user_address.clone(), AddressStyle::Detailed, AddressKind::User),
+                    ),
+                    (
+                        "Created On",
+                        ZkEntry::Timestamp(Some(it.submit_time.clone()), TimestampStyle::Simple),
+                    ),
                     ("Auto Submit Proof Network(s)", ZkEntry::Raw(it.networks.join(" "))),
                     ("Circuit Size", ZkEntry::Raw(it.image.circuit_size.to_string())),
                     ("Creator Paid Proof", ZkEntry::Raw(it.creator_paid_proof.clone())),
