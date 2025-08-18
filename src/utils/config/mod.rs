@@ -13,7 +13,7 @@ pub struct Config {
     pub api: ApiConfig,
 }
 
-const CONFIG_TOML: &str = include_str!("../../config.toml");
+const CONFIG_TOML: &str = include_str!("../../../config.toml");
 
 pub fn load_config() -> anyhow::Result<Config> {
     let config = toml::from_str::<Config>(CONFIG_TOML)?;

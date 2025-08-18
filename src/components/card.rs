@@ -12,16 +12,9 @@ pub fn Card(
     let h_cls = format!("card-header {}", header_class.unwrap_or_default());
     let b_cls = format!("card-body {}", body_class.unwrap_or_default());
     rsx! {
-        div {
-            class: "{c_cls}",
-            h1 {
-                class: "{h_cls}",
-                {header}
-            }
-            div {
-                class: "{b_cls}",
-                {body}
-            }
+        div { class: "{c_cls}",
+            h1 { class: "{h_cls}", {header} }
+            div { class: "{b_cls}", {body} }
         }
     }
 }
@@ -52,34 +45,25 @@ pub fn EntryListCard<U: EntryListLike + PartialEq + Clone + 'static>(
     let rcol_cls = rcol_class.unwrap_or_default();
 
     rsx! {
-        div {
-            class: "flex-row;",
-            div {
-                class: "flex-1",
+        div { class: "flex-row;",
+            div { class: "flex-1",
                 Card {
                     header: "{title}",
                     header_class: "{h_cls}",
                     card_class: "{c_cls}",
                     body: rsx! {
                         div {
-                            { entries
-                                .into_iter()
-                                .map(|(label, value)| {
-                                    rsx!{
-                                        div {
-                                            class: "detailed-entry",
-                                            div {
-                                                class: "{lcol_cls}",
-                                                "{label}"
-                                            }
-                                            div {
-                                                class: "{rcol_cls}",
-                                                { value.into_cell() }
+                            {
+                                entries
+                                    .into_iter()
+                                    .map(|(label, value)| {
+                                        rsx! {
+                                            div { class: "detailed-entry",
+                                                div { class: "{lcol_cls}", "{label}" }
+                                                div { class: "{rcol_cls}", {value.into_cell()} }
                                             }
                                         }
-
-                                    }
-                                })
+                                    })
                             }
                         }
                     },

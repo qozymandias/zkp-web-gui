@@ -93,7 +93,6 @@ impl EntryListLike for FailureNodeDetails {
         let Some(stats) = self.node.as_ref().map(|it| &it.statistics) else {
             return vec![];
         };
-
         vec![
             ("Failed Tasks", ZkEntry::Raw(stats.failed_tasks.to_string())),
             ("Timed Out Tasks", ZkEntry::Raw(stats.timed_out_count.to_string())),
@@ -220,7 +219,6 @@ impl EntryListLike for LastMonthsNodeStats {
         let Some(stats) = &self.timerange_stats else {
             return vec![];
         };
-
         vec![
             ("Successful Tasks Number", ZkEntry::Raw(stats.stats.successful.to_string())),
             ("Failed Tasks Number", ZkEntry::Raw(stats.stats.failed.to_string())),
@@ -231,8 +229,7 @@ impl EntryListLike for LastMonthsNodeStats {
 
 fn make_node_details_div<U: EntryListLike + PartialEq + Clone + 'static>(data: U) -> Element {
     rsx! {
-        div {
-            class: "node-details-wrapper",
+        div { class: "node-details-wrapper",
             EntryListCard {
                 data,
                 card_class: "transparent-border",
@@ -280,17 +277,35 @@ pub fn NodeDetails(id: String) -> Element {
 
     let node_details = node();
     rsx! {
-        div {
-            style: "padding: 2rem;",
-            div {
-                id: "detail-header",
+        div { style: "padding: 2rem;",
+            div { id: "detail-header",
                 div { "{id}" }
-            },
+            }
         }
-        { make_node_details_div( GeneralNodeDetails { node : node_details.clone() }) }
-        { make_node_details_div( FailureNodeDetails { node : node_details.clone() }) }
-        { make_node_details_div( SuccessfulSetupNodeStats { node : node_details.clone() }) }
-        { make_node_details_div( SuccessfulProveNodeStats { node : node_details.clone() }) }
-        { make_node_details_div( LastMonthsNodeStats { timerange_stats: stats() }) }
+        {
+            make_node_details_div(GeneralNodeDetails {
+                node: node_details.clone(),
+            })
+        }
+        {
+            make_node_details_div(FailureNodeDetails {
+                node: node_details.clone(),
+            })
+        }
+        {
+            make_node_details_div(SuccessfulSetupNodeStats {
+                node: node_details.clone(),
+            })
+        }
+        {
+            make_node_details_div(SuccessfulProveNodeStats {
+                node: node_details.clone(),
+            })
+        }
+        {
+            make_node_details_div(LastMonthsNodeStats {
+                timerange_stats: stats(),
+            })
+        }
     }
 }

@@ -1,0 +1,10 @@
+max_width = 120
+fn_call_width = 80
+chain_width = 80
+struct_lit_width = 50
+tab_spaces = 4
+hard_tabs = false
+attribute_layout = "mixed"
+trailing_comma = true
+quote_style = "double"
+sort_attributes = true

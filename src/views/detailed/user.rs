@@ -109,21 +109,13 @@ pub fn UserDetails(id: String) -> Element {
     });
 
     rsx! {
-        div {
-            style: "padding: 2rem;",
-            div {
-                id: "detail-header",
-                div {
-                    "User"
-                }
-                div {
-                    id: "right-div",
-                    "{id}"
-                }
-            },
+        div { style: "padding: 2rem;",
+            div { id: "detail-header",
+                div { "User" }
+                div { id: "right-div", "{id}" }
+            }
         }
-        div {
-            class: "node-details-wrapper",
+        div { class: "node-details-wrapper",
             EntryListCard {
                 data: DetailedUser {
                     user: user(),
@@ -135,6 +127,6 @@ pub fn UserDetails(id: String) -> Element {
                 lcol_class: "node-details-col",
             }
         }
-        Table { data : tasks() }
+        Table { data: tasks() }
     }
 }

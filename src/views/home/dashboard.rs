@@ -24,35 +24,37 @@ fn into_summary_card(header: &str, header_class: &str, inp: Vec<ConciseTask>) ->
         })
         .collect::<Vec<_>>();
     rsx! {
-        div {
-            style: "padding: 0rem 1rem;",
+        div { style: "padding: 0rem 1rem;",
             Card {
                 header,
                 header_class,
-                body: rsx! { div { {
-                    entries.into_iter().map(|(lt, lb, rt, rb)| {
-                        rsx!{
-                            div {
-                                class: "detailed-entry",
-                                div {
-                                    { lt.into_cell() }
-                                    { lb.into_cell() }
-                                }
-                                div {
-                                    style: "text-align: right",
-                                    { rt.into_cell() }
-                                    { rb.into_cell() }
-                                }
-                            }
+                body: rsx! {
+                    div {
+                        {
+                            entries
+                                .into_iter()
+                                .map(|(lt, lb, rt, rb)| {
+                                    rsx! {
+                                        div { class: "detailed-entry",
+                                            div {
+                                                {lt.into_cell()}
+                                                {lb.into_cell()}
+                                            }
+                                            div { style: "text-align: right",
+                                                {rt.into_cell()}
+                                                {rb.into_cell()}
+                                            }
+                                        }
+                                    }
+                                })
                         }
-                    })
-                } } }
+                    }
+                },
             }
         }
     }
 }
 
-// const HEADER_SVG: Asset = asset!("/assets/header.svg");
 #[component]
 pub fn Dashboard() -> Element {
     let mut setups = use_signal(Vec::<ConciseTask>::new);
@@ -76,11 +78,10 @@ pub fn Dashboard() -> Element {
     });
 
     rsx! {
-        div {
-            id: "adjacent-task-summaries",
-            { into_summary_card("Latest Setups", "aqua", setups()) }
-            { into_summary_card("Latest Proofs", "light-blue", proves()) }
+        div { id: "adjacent-task-summaries",
+            {into_summary_card("Latest Setups", "aqua", setups())}
+            {into_summary_card("Latest Proofs", "light-blue", proves())}
         }
-        TaskTables { }
+        TaskTables {}
     }
 }

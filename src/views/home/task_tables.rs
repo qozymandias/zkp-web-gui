@@ -5,8 +5,10 @@ use zkp_service_helper::interface::ProverNode;
 use zkp_service_helper::interface::Round1Info;
 use zkp_service_helper::interface::Round2Info;
 
+use crate::components::table::PaginationHandler;
 use crate::components::table::Table;
 use crate::components::table::TableLike;
+use crate::components::table::N_PAGINATED;
 use crate::utils::serde_to_string;
 use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
@@ -163,11 +165,39 @@ impl TableLike for Vec<Round2Info> {
                 vec![
                     ZkEntry::MaybeAddress(row._id.clone().map(|it| it.oid), AddressStyle::Dashboard, AddressKind::Task),
                     ZkEntry::Timestamp(row.batched_time.clone(), TimestampStyle::Full),
-                    // TODO: include network name
                     ZkEntry::Raw(row.registered_tx_hash.clone().unwrap_or_na()),
                 ]
             })
             .collect()
+    }
+}
+
+#[component]
+pub fn TaskHistoryTable() -> Element {
+    let curr = use_signal(|| 0u64);
+    let resource = use_resource(move || async move {
+        ZKH.query_concise_tasks(None, None, None, None, None, Some(curr() * N_PAGINATED), Some(N_PAGINATED))
+            .await
+            .map(|res| (res.total, res.data))
+            .unwrap_or((0, vec![]))
+    });
+
+    let mut tasks = Vec::<ConciseTask>::new();
+    let mut total = 0u64;
+    match resource.state().cloned() {
+        UseResourceState::Ready => {
+            let result = resource.value().unwrap();
+            total = result.0;
+            tasks = result.1;
+        }
+        _ => tracing::info!("Loading ... "),
+    }
+
+    rsx! {
+        Table {
+            data: tasks,
+            pagination: PaginationHandler::default(total, curr),
+        }
     }
 }
 
@@ -177,16 +207,6 @@ pub fn TaskTables() -> Element {
     use_future(move || async move {
         provers.set(
             ZKH.query_node_statistics(None, Some(0), Some(5))
-                .await
-                .map(|res| res.data)
-                .unwrap_or(vec![]),
-        );
-    });
-
-    let mut tasks = use_signal(Vec::<ConciseTask>::new);
-    use_future(move || async move {
-        tasks.set(
-            ZKH.query_concise_tasks(None, None, None, None, None, None, None)
                 .await
                 .map(|res| res.data)
                 .unwrap_or(vec![]),
@@ -212,6 +232,7 @@ pub fn TaskTables() -> Element {
                 .unwrap_or(vec![]),
         );
     });
+
     let mut round2_history = use_signal(Vec::<Round2Info>::new);
     use_future(move || async move {
         round2_history.set(
@@ -223,10 +244,10 @@ pub fn TaskTables() -> Element {
     });
 
     rsx! {
-        Table { data : provers() }
-        Table { data : tasks() }
-        Table { data : auto_submit_task_history() }
-        Table { data : round1_history() }
-        Table { data : round2_history() }
+        Table { data: provers() }
+        TaskHistoryTable {}
+        Table { data: auto_submit_task_history() }
+        Table { data: round1_history() }
+        Table { data: round2_history() }
     }
 }

@@ -1,5 +1,5 @@
 body {
-    background-color: #1D2227;
+    background-color: #1d2227;
     color: #ffffff;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 20px;
@@ -69,18 +69,18 @@ body {
 }
 
 .table-row-even-color {
-    background-color: #2C3841;
-    border-color: #2C3841;
+    background-color: #2c3841;
+    border-color: #2c3841;
 }
 
 .table-row-odd-color {
-    background-color: #232B32;
-    border-color: #232B32;
+    background-color: #232b32;
+    border-color: #232b32;
 }
 
 .table-header-color {
-    background-color: #2A434E;
-    border-color: #2A434E;
+    background-color: #2a434e;
+    border-color: #2a434e;
 }
 
 #status-container {
@@ -208,7 +208,7 @@ body {
     display: flex;
     justify-content: flex-start;
     padding: 5px;
-    border-bottom: 1px solid #34575F;
+    border-bottom: 1px solid #34575f;
 }
 
 .md5-pill {
@@ -228,7 +228,7 @@ body {
     font-size: 0.95rem;
 
     a {
-        color: #CCF2FD;
+        color: #ccf2fd;
         text-decoration: none;
     }
 
@@ -243,7 +243,7 @@ body {
     font-size: 0.95rem;
 
     a {
-        color: #51BDFB;
+        color: #51bdfb;
         text-decoration: none;
     }
 
@@ -365,4 +365,24 @@ body {
 .flex-row {
     display: flex;
     flex-direction: row;
+}
+
+.pagination-button {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+
+    button {
+        border-radius: 5px;
+        border: transparent;
+        color: white;
+        background-color: #37656f;
+    }
+
+    button:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
 }

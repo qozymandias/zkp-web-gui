@@ -1,3 +1,5 @@
+pub mod config;
+
 mod entry;
 pub use entry::AddressKind;
 pub use entry::AddressStyle;
@@ -36,7 +38,6 @@ pub fn timestamp_formatted(ts_str: &str, style: TimestampStyle) -> String {
         .parse::<chrono::DateTime<chrono::Utc>>()
         .unwrap()
         .with_timezone(&chrono::Local);
-
     ts.format(match style {
         TimestampStyle::Simple => {
             if ts.date_naive() == chrono::Local::now().date_naive() {
@@ -76,7 +77,6 @@ pub fn calc_processing_time_secs(start_in: Option<String>, end_in: Option<String
             .and_then(|(s, e)| {
                 let s_st: std::time::SystemTime = s.into();
                 let e_st: std::time::SystemTime = e.into();
-
                 e_st.duration_since(s_st)
                     .inspect_err(|e| tracing::error!("{e}"))
                     .ok()

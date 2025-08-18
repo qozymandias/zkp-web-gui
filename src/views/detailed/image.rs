@@ -37,14 +37,12 @@ impl DetailedImage {
         let config = config_in.read().as_ref().cloned()?;
         let task = task_in.read().as_ref().cloned()?;
         let proofs_submitted = proofs_submitted_in.read().as_ref().cloned()?;
-
         let networks = config
             .chain_info_list
             .iter()
             .filter(|it| image.auto_submit_network_ids.iter().any(|id| *id == it.chain_id))
             .map(|it| it.chain_name.clone())
             .collect();
-
         Some(Self {
             submit_time: task.submit_time,
             networks,
@@ -112,8 +110,8 @@ impl EntryListLike for Option<DetailedImage> {
 #[component]
 pub fn ImageDetails(id: String) -> Element {
     tracing::info!("Image detail loading {id}");
-    let md5 = id.clone();
 
+    let md5 = id.clone();
     let mut config = use_signal(|| Option::<AppConfig>::None);
     use_future(move || async move {
         config.set(ZKH.query_config().await.inspect_err(|e| tracing::error!("{e}")).ok());
@@ -131,7 +129,6 @@ pub fn ImageDetails(id: String) -> Element {
                 .inspect_err(|e| tracing::error!("{e}"))
                 .ok()
                 .map(|res| res.data);
-
             setup.set(res.clone().and_then(|res| res.first().cloned()));
             setups.set(res.unwrap_or(vec![]));
         }
@@ -164,36 +161,30 @@ pub fn ImageDetails(id: String) -> Element {
     let desc = image.as_ref().map(|it| it.description_url.clone()).unwrap_or("NA".to_string());
     let left = format!("Image Hash {}", md5);
     let right = image.as_ref().map(|it| it.user_address.clone()).unwrap_or("NA".to_string());
-
     rsx! {
-        div {
-            style: "padding: 2rem;",
-            div {
-                id: "detail-header",
-                div {
-                    "{left}"
-                }
-                div {
-                    id: "right-div",
-                    "{right}"
-                }
-            },
+        div { style: "padding: 2rem;",
+            div { id: "detail-header",
+                div { "{left}" }
+                div { id: "right-div", "{right}" }
+            }
         }
-        div {
-            class: "stretched-nested-div-parent",
-            div {
-                class: "flex-1 pad-5",
+        div { class: "stretched-nested-div-parent",
+            div { class: "flex-1 pad-5",
                 EntryListCard {
                     data: DetailedImage::new(image, config, setup, prove_count),
                     lcol_class: "image-details-col",
                 }
             }
-            div {
-                class: "pad-5 stretched-nested-div",
-                Card { header: "Description", body: rsx! { "{desc}" } }
+            div { class: "pad-5 stretched-nested-div",
+                Card {
+                    header: "Description",
+                    body: rsx! {
+                    "{desc}"
+                    },
+                }
             }
         }
-        Table { data : proves() }
-        Table { data : setups() }
+        Table { data: proves() }
+        Table { data: setups() }
     }
 }
