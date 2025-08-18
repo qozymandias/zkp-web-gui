@@ -11,17 +11,6 @@ mod config;
 mod utils;
 mod views;
 
-pub static ZKH: once_cell::sync::Lazy<zkp_service_helper::helper::ZkWasmServiceHelper> =
-    once_cell::sync::Lazy::new(|| zkp_service_helper::helper::ZkWasmServiceHelper::new(config::CONFIG.api.url.clone()));
-
-const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
-
-fn main() {
-    console_error_panic_hook::set_once();
-    dioxus::launch(App);
-}
-
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
@@ -50,4 +39,15 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         Router::<Route> {}
     }
+}
+
+pub static ZKH: once_cell::sync::Lazy<zkp_service_helper::helper::ZkWasmServiceHelper> =
+    once_cell::sync::Lazy::new(|| zkp_service_helper::helper::ZkWasmServiceHelper::new(config::CONFIG.api.url.clone()));
+
+const FAVICON: Asset = asset!("/assets/favicon.ico");
+const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
+
+fn main() {
+    console_error_panic_hook::set_once();
+    dioxus::launch(App);
 }

@@ -173,20 +173,20 @@ impl TableLike for Vec<Round2Info> {
 
 #[component]
 pub fn TaskTables() -> Element {
-    let mut tasks = use_signal(Vec::<ConciseTask>::new);
+    let mut provers = use_signal(Vec::<ProverNode>::new);
     use_future(move || async move {
-        tasks.set(
-            ZKH.query_concise_tasks(None, None, None, None, None, None, None)
+        provers.set(
+            ZKH.query_node_statistics(None, Some(0), Some(5))
                 .await
                 .map(|res| res.data)
                 .unwrap_or(vec![]),
         );
     });
 
-    let mut provers = use_signal(Vec::<ProverNode>::new);
+    let mut tasks = use_signal(Vec::<ConciseTask>::new);
     use_future(move || async move {
-        provers.set(
-            ZKH.query_node_statistics(None, Some(0), Some(5))
+        tasks.set(
+            ZKH.query_concise_tasks(None, None, None, None, None, None, None)
                 .await
                 .map(|res| res.data)
                 .unwrap_or(vec![]),

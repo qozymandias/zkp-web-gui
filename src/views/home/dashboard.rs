@@ -25,6 +25,7 @@ fn into_summary_card(header: &str, header_class: &str, inp: Vec<ConciseTask>) ->
         .collect::<Vec<_>>();
     rsx! {
         div {
+            style: "padding: 0rem 1rem;",
             Card {
                 header,
                 header_class,

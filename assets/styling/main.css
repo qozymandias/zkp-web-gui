@@ -1,5 +1,5 @@
 body {
-    background-color: #0f1116;
+    background-color: #1D2227;
     color: #ffffff;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 20px;
@@ -62,10 +62,25 @@ body {
     padding: 8px;
 }
 
-.table-row-inner {
+.table-row {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: center;
+}
+
+.table-row-even-color {
+    background-color: #2C3841;
+    border-color: #2C3841;
+}
+
+.table-row-odd-color {
+    background-color: #232B32;
+    border-color: #232B32;
+}
+
+.table-header-color {
+    background-color: #2A434E;
+    border-color: #2A434E;
 }
 
 #status-container {
@@ -193,7 +208,7 @@ body {
     display: flex;
     justify-content: flex-start;
     padding: 5px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid #34575F;
 }
 
 .md5-pill {
