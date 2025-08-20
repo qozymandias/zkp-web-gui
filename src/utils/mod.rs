@@ -1,11 +1,12 @@
-pub mod config;
+use serde::Serialize;
+use zkp_service_helper::interface::PaginationResult;
+use zkp_service_helper::interface::TaskStatus;
 
+pub mod config;
 mod entry;
 pub use entry::AddressKind;
 pub use entry::AddressStyle;
 pub use entry::ZkEntry;
-
-use zkp_service_helper::interface::TaskStatus;
 
 pub trait UnwrapOrNA {
     fn unwrap_or_na(&self) -> String;
@@ -14,6 +15,19 @@ pub trait UnwrapOrNA {
 impl UnwrapOrNA for Option<String> {
     fn unwrap_or_na(&self) -> String {
         self.clone().unwrap_or("N/A".to_string())
+    }
+}
+
+pub trait UnwrapOrEmpty<T: Serialize> {
+    fn unwrap_or_empty(self) -> PaginationResult<Vec<T>>;
+}
+
+impl<T: Serialize> UnwrapOrEmpty<T> for anyhow::Result<PaginationResult<Vec<T>>> {
+    fn unwrap_or_empty(self) -> PaginationResult<Vec<T>> {
+        self.unwrap_or_else(|e| {
+            tracing::error!("{e}");
+            PaginationResult { data: Vec::<T>::new(), total: 0 }
+        })
     }
 }
 

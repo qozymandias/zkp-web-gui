@@ -1,3 +1,5 @@
+#![feature(associated_type_defaults)]
+
 use dioxus::prelude::*;
 use once_cell::sync::Lazy;
 use views::Dashboard;

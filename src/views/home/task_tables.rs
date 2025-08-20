@@ -1,18 +1,22 @@
+use std::future::Future;
+use std::pin::Pin;
+
 use dioxus::prelude::*;
 use zkp_service_helper::interface::AutoSubmitProof;
 use zkp_service_helper::interface::ConciseTask;
+use zkp_service_helper::interface::PaginationResult;
 use zkp_service_helper::interface::ProverNode;
 use zkp_service_helper::interface::Round1Info;
 use zkp_service_helper::interface::Round2Info;
 
-use crate::components::table::PaginationHandler;
-use crate::components::table::Table;
+use crate::components::table::PaginatedTable;
+use crate::components::table::PaginatedTableLike;
 use crate::components::table::TableLike;
-use crate::components::table::N_PAGINATED;
 use crate::utils::serde_to_string;
 use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
 use crate::utils::TimestampStyle;
+use crate::utils::UnwrapOrEmpty;
 use crate::utils::UnwrapOrNA;
 use crate::utils::ZkEntry;
 use crate::ZKH;
@@ -58,6 +62,19 @@ impl TableLike for Vec<ProverNode> {
     }
 }
 
+impl PaginatedTableLike for Vec<ProverNode> {
+    fn n_per_paginated() -> u64 {
+        5
+    }
+
+    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
+        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<ProverNode>>>>> {
+            Box::pin(async move { ZKH.query_node_statistics(None, Some(page), Some(per)).await.unwrap_or_empty() })
+        }
+        fetch
+    }
+}
+
 impl TableLike for Vec<ConciseTask> {
     fn title(&self) -> &str {
         "Task History"
@@ -87,6 +104,23 @@ impl TableLike for Vec<ConciseTask> {
                 ]
             })
             .collect()
+    }
+}
+
+impl PaginatedTableLike for Vec<ConciseTask> {
+    fn n_per_paginated() -> u64 {
+        10
+    }
+
+    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
+        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<ConciseTask>>>>> {
+            Box::pin(async move {
+                ZKH.query_concise_tasks(None, None, None, None, None, Some(page), Some(per))
+                    .await
+                    .unwrap_or_empty()
+            })
+        }
+        fetch
     }
 }
 
@@ -120,6 +154,23 @@ impl TableLike for Vec<AutoSubmitProof> {
     }
 }
 
+impl PaginatedTableLike for Vec<AutoSubmitProof> {
+    fn n_per_paginated() -> u64 {
+        5
+    }
+
+    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
+        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<AutoSubmitProof>>>>> {
+            Box::pin(async move {
+                ZKH.query_auto_submit_proofs(None, None, None, None, None, Some(page), Some(per))
+                    .await
+                    .unwrap_or_empty()
+            })
+        }
+        fetch
+    }
+}
+
 impl TableLike for Vec<Round1Info> {
     fn title(&self) -> &str {
         "Round 1 Proof History"
@@ -150,6 +201,23 @@ impl TableLike for Vec<Round1Info> {
     }
 }
 
+impl PaginatedTableLike for Vec<Round1Info> {
+    fn n_per_paginated() -> u64 {
+        5
+    }
+
+    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
+        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<Round1Info>>>>> {
+            Box::pin(async move {
+                ZKH.query_round1_info(None, None, None, None, None, None, Some(page), Some(per))
+                    .await
+                    .unwrap_or_empty()
+            })
+        }
+        fetch
+    }
+}
+
 impl TableLike for Vec<Round2Info> {
     fn title(&self) -> &str {
         "Round 2 Proof History"
@@ -172,82 +240,30 @@ impl TableLike for Vec<Round2Info> {
     }
 }
 
-#[component]
-pub fn TaskHistoryTable() -> Element {
-    let curr = use_signal(|| 0u64);
-    let resource = use_resource(move || async move {
-        ZKH.query_concise_tasks(None, None, None, None, None, Some(curr() * N_PAGINATED), Some(N_PAGINATED))
-            .await
-            .map(|res| (res.total, res.data))
-            .unwrap_or((0, vec![]))
-    });
-
-    let mut tasks = Vec::<ConciseTask>::new();
-    let mut total = 0u64;
-    match resource.state().cloned() {
-        UseResourceState::Ready => {
-            let result = resource.value().unwrap();
-            total = result.0;
-            tasks = result.1;
-        }
-        _ => tracing::info!("Loading ... "),
+impl PaginatedTableLike for Vec<Round2Info> {
+    fn n_per_paginated() -> u64 {
+        5
     }
 
-    rsx! {
-        Table {
-            data: tasks,
-            pagination: PaginationHandler::default(total, curr),
+    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
+        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<Round2Info>>>>> {
+            Box::pin(async move {
+                ZKH.query_round2_info(None, None, None, None, None, Some(page), Some(per))
+                    .await
+                    .unwrap_or_empty()
+            })
         }
+        fetch
     }
 }
 
 #[component]
 pub fn TaskTables() -> Element {
-    let mut provers = use_signal(Vec::<ProverNode>::new);
-    use_future(move || async move {
-        provers.set(
-            ZKH.query_node_statistics(None, Some(0), Some(5))
-                .await
-                .map(|res| res.data)
-                .unwrap_or(vec![]),
-        );
-    });
-
-    let mut auto_submit_task_history = use_signal(Vec::<AutoSubmitProof>::new);
-    use_future(move || async move {
-        auto_submit_task_history.set(
-            ZKH.query_auto_submit_proofs(None, None, None, None, None, Some(0), Some(5))
-                .await
-                .map(|res| res.data)
-                .unwrap_or(vec![]),
-        );
-    });
-
-    let mut round1_history = use_signal(Vec::<Round1Info>::new);
-    use_future(move || async move {
-        round1_history.set(
-            ZKH.query_round1_info(None, None, None, None, None, None, Some(0), Some(5))
-                .await
-                .map(|res| res.data)
-                .unwrap_or(vec![]),
-        );
-    });
-
-    let mut round2_history = use_signal(Vec::<Round2Info>::new);
-    use_future(move || async move {
-        round2_history.set(
-            ZKH.query_round2_info(None, None, None, None, None, Some(0), Some(5))
-                .await
-                .map(|res| res.data)
-                .unwrap_or(vec![]),
-        );
-    });
-
     rsx! {
-        Table { data: provers() }
-        TaskHistoryTable {}
-        Table { data: auto_submit_task_history() }
-        Table { data: round1_history() }
-        Table { data: round2_history() }
+        PaginatedTable::<Vec<ProverNode>> {}
+        PaginatedTable::<Vec<ConciseTask>> {}
+        PaginatedTable::<Vec<AutoSubmitProof>> {}
+        PaginatedTable::<Vec<Round1Info>> {}
+        PaginatedTable::<Vec<Round2Info>> {}
     }
 }

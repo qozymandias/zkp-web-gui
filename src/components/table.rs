@@ -1,4 +1,9 @@
+use std::future::Future;
+use std::pin::Pin;
+
 use dioxus::prelude::*;
+use serde::Serialize;
+use zkp_service_helper::interface::PaginationResult;
 
 use crate::components::card::EntryLike;
 use crate::utils::ZkEntry;
@@ -45,7 +50,7 @@ pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T, pagination: Op
                                 div { class: "table-row table-header-color pagination-button",
                                     button { onclick: pagn.begin, "<<" }
                                     button { onclick: pagn.prev, "<" }
-                                    "{pagn.curr} of {pagn.total}"
+                                    "{pagn.curr + 1} of {pagn.total + 1}"
                                     button { onclick: pagn.next, ">" }
                                     button { onclick: pagn.last, ">>" }
                                 }
@@ -57,8 +62,6 @@ pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T, pagination: Op
         }
     }
 }
-
-pub const N_PAGINATED: u64 = 10;
 
 #[derive(Clone, PartialEq)]
 pub struct PaginationHandler {
@@ -82,8 +85,9 @@ impl PaginationHandler {
         Self { begin, last, prev, next, curr, total }
     }
 
-    pub fn default(total: u64, mut curr: Signal<u64>) -> Self {
-        let total_p = total / N_PAGINATED;
+    pub fn default(total: u64, mut curr: Signal<u64>, n_paginated: Option<u64>) -> Self {
+        let n_pagn = n_paginated.unwrap_or(10);
+        let total_p = total / n_pagn;
 
         PaginationHandler::new(
             EventHandler::new(move |_| {
@@ -99,8 +103,46 @@ impl PaginationHandler {
                 curr.set(std::cmp::min(total_p, curr() + 1));
             }),
             curr(),
-            total / N_PAGINATED,
+            total / n_pagn,
         )
     }
 }
 
+pub trait PaginatedTableLike: TableLike + Serialize + Clone + PartialEq + 'static {
+    type Data: TableLike + Serialize + Clone + PartialEq + 'static = Self;
+
+    type Fut: Future<Output = PaginationResult<Self::Data>> + 'static =
+        Pin<Box<dyn Future<Output = PaginationResult<Self::Data>>>>;
+
+    fn n_per_paginated() -> u64;
+
+    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut;
+
+    fn paginated_table_handler(n: u64, future: fn(u64, u64) -> Self::Fut) -> Element {
+        let curr = use_signal(|| 0u64);
+        let resource = use_resource(move || async move { future(curr() * n, n).await });
+        let loaded_resource = match resource.state().cloned() {
+            UseResourceState::Ready => Some(resource.value().unwrap()),
+            _ => {
+                tracing::info!("Loading ... ");
+                None
+            }
+        };
+
+        rsx! {
+            if let Some(res) = loaded_resource {
+                Table {
+                    data: res.data,
+                    pagination: PaginationHandler::default(res.total, curr, Some(n)),
+                }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn PaginatedTable<T: PaginatedTableLike + PartialEq + Clone + 'static>() -> Element {
+    rsx! {
+        {T::paginated_table_handler(T::n_per_paginated(), T::query_function())}
+    }
+}
