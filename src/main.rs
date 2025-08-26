@@ -20,6 +20,8 @@ pub static ZKH: Lazy<ZkWasmServiceHelper> =
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 
+const GLOBAL_PADDING: &str = "padding: 0rem 5rem;";
+
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {

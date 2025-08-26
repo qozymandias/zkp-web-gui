@@ -12,6 +12,7 @@ use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
 use crate::utils::UnwrapOrNA;
 use crate::utils::ZkEntry;
+use crate::GLOBAL_PADDING;
 use crate::ZKH;
 
 #[derive(Clone, PartialEq)]
@@ -109,7 +110,7 @@ pub fn UserDetails(id: String) -> Element {
     });
 
     rsx! {
-        div { style: "padding: 2rem;",
+        div { style: GLOBAL_PADDING,
             div { id: "detail-header",
                 div { "User" }
                 div { id: "right-div", "{id}" }

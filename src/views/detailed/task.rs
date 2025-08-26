@@ -12,6 +12,7 @@ use crate::utils::AddressStyle;
 use crate::utils::TimestampStyle;
 use crate::utils::UnwrapOrNA;
 use crate::utils::ZkEntry;
+use crate::GLOBAL_PADDING;
 use crate::ZKH;
 
 impl EntryListLike for Option<Task> {
@@ -124,7 +125,7 @@ pub fn TaskDetails(id: String) -> Element {
         .and_then(|task| task.node_address.clone())
         .unwrap_or("NA".to_string());
     rsx! {
-        div { style: "padding: 2rem;",
+        div { style: GLOBAL_PADDING,
             div { id: "detail-header",
                 div { "{left}" }
                 div { id: "right-div", "{right}" }

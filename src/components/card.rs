@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::GLOBAL_PADDING;
+
 #[component]
 pub fn Card(
     header: String,
@@ -15,6 +17,19 @@ pub fn Card(
         div { class: "{c_cls}",
             h1 { class: "{h_cls}", {header} }
             div { class: "{b_cls}", {body} }
+        }
+    }
+}
+
+#[component]
+pub fn CardWithIcon<E: EntryLike + Clone + PartialEq + 'static>(title: String, text: E, icon: Element) -> Element {
+    rsx! {
+        div { class: "icon-card",
+            {icon}
+            div {
+                h3 { "{title}" }
+                p { {text.into_cell()} }
+            }
         }
     }
 }
@@ -68,6 +83,51 @@ pub fn EntryListCard<U: EntryListLike + PartialEq + Clone + 'static>(
                         }
                     },
                 }
+            }
+        }
+    }
+}
+
+pub trait SummaryCardLike {
+    type T: EntryLike + Clone + PartialEq + 'static;
+    fn entries(self) -> Vec<(Self::T, Self::T, Self::T, Self::T)>;
+}
+
+#[component]
+pub fn SummaryCard<U: SummaryCardLike + PartialEq + Clone + 'static>(
+    data: U,
+    header: String,
+    header_class: Option<String>,
+) -> Element {
+    let entries = data.entries();
+
+    rsx! {
+        div { style: "padding: 0rem 1rem;",
+            Card {
+                header,
+                header_class,
+                body: rsx! {
+                    div {
+                        {
+                            entries
+                                .into_iter()
+                                .map(|(lt, lb, rt, rb)| {
+                                    rsx! {
+                                        div { class: "detailed-entry",
+                                            div {
+                                                {lt.into_cell()}
+                                                {lb.into_cell()}
+                                            }
+                                            div { style: "text-align: right",
+                                                {rt.into_cell()}
+                                                {rb.into_cell()}
+                                            }
+                                        }
+                                    }
+                                })
+                        }
+                    }
+                },
             }
         }
     }

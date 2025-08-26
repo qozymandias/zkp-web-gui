@@ -7,6 +7,7 @@ use zkp_service_helper::interface::PaginationResult;
 
 use crate::components::card::EntryLike;
 use crate::utils::ZkEntry;
+use crate::GLOBAL_PADDING;
 
 pub trait TableLike {
     fn title(&self) -> &str;
@@ -22,7 +23,7 @@ pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T, pagination: Op
     let rows = data.rows();
 
     rsx! {
-        div { style: "padding: 0rem 2rem;",
+        div { style: GLOBAL_PADDING,
             h1 { "{title}" }
             table { style: "border-collapse: collapse; width: 100%;",
                 thead {

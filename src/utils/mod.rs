@@ -8,6 +8,9 @@ pub use entry::AddressKind;
 pub use entry::AddressStyle;
 pub use entry::ZkEntry;
 
+mod signal;
+pub use signal::QueryFunctionHandler;
+
 pub trait UnwrapOrNA {
     fn unwrap_or_na(&self) -> String;
 }

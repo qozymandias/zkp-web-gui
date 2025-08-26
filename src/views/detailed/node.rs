@@ -11,6 +11,7 @@ use crate::utils::AddressStyle;
 use crate::utils::TimestampStyle;
 use crate::utils::UnwrapOrNA;
 use crate::utils::ZkEntry;
+use crate::GLOBAL_PADDING;
 use crate::ZKH;
 
 #[derive(Clone, PartialEq)]
@@ -277,7 +278,7 @@ pub fn NodeDetails(id: String) -> Element {
 
     let node_details = node();
     rsx! {
-        div { style: "padding: 2rem;",
+        div { style: GLOBAL_PADDING,
             div { id: "detail-header",
                 div { "{id}" }
             }
