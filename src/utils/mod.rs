@@ -137,6 +137,7 @@ pub fn task_status_to_background_color(status: TaskStatus) -> &'static str {
 
 pub fn serde_to_string<T: serde::Serialize>(obj: &T) -> anyhow::Result<String> {
     Ok(match serde_json::to_value(obj)? {
+        serde_json::Value::Null => "Null".to_string(),
         serde_json::Value::Bool(v) => v.to_string(),
         serde_json::Value::Number(v) => v.to_string(),
         serde_json::Value::String(v) => v,

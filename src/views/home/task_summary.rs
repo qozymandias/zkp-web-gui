@@ -11,7 +11,6 @@ use crate::utils::QueryFunctionHandler;
 use crate::utils::TimestampStyle;
 use crate::utils::ZkEntry;
 use crate::views::home::StatsSummary;
-use crate::GLOBAL_PADDING;
 use crate::ZKH;
 
 impl QueryFunctionHandler for StatisticsInfo {
