@@ -1,8 +1,5 @@
 #![feature(associated_type_defaults)]
-#![allow(
-    clippy::type_complexity,
-)]
-
+#![allow(clippy::type_complexity)]
 
 use dioxus::prelude::*;
 use once_cell::sync::Lazy;

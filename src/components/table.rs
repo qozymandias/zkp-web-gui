@@ -129,20 +129,14 @@ pub trait PaginatedTableLike: TableLike + Serialize + Clone + PartialEq + 'stati
         let mut inps_signal = use_signal(|| inps.clone());
 
         use_effect(move || {
-            tracing::info!("Triggered !!!");
             inps_signal.set(inps.clone());
         });
 
-        tracing::info!(
-            "paginated_table_handler ... for type {:?} ",
-            std::any::type_name::<Self::Data>()
-        );
         let curr = use_signal(|| 0u64);
         let future = std::rc::Rc::new(future);
         let resource = use_resource(move || {
             let fut = future.clone();
             let inps_cp = inps_signal();
-            tracing::info!("Triggered !!!!!!!");
             async move { fut(curr() * n, n, inps_cp).await }
         });
         let loaded_resource = match resource.state().cloned() {

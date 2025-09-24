@@ -2,19 +2,43 @@ use dioxus::prelude::*;
 use zkp_service_helper::interface::TaskStatus;
 use zkp_service_helper::interface::TaskType;
 
+use super::AutoSubmitTaskTables;
+use super::ConciseTaskTables;
+use super::ProverTaskTables;
 use super::TaskSummary;
-use super::TaskTables;
 use crate::components::search::Search;
 use crate::components::search::SearchSelectLike;
-use crate::utils::serde_to_string;
 use crate::GLOBAL_PADDING;
 
 #[component]
 pub fn Dashboard() -> Element {
-    let trigger = use_signal(|| false);
-    let taskstatus = use_signal(|| Option::<TaskStatus>::None);
-    let tasktype = use_signal(|| Option::<TaskType>::None);
-    let query = use_signal(|| Option::<String>::None);
+    let mut taskstatus = use_signal(|| Option::<TaskStatus>::None);
+    let mut tasktype = use_signal(|| Option::<TaskType>::None);
+    let mut query = use_signal(|| Option::<String>::None);
+    let mut trigger = use_signal(|| false);
+    let reset = use_signal(|| false);
+
+    // use_effect(move || {
+    //     taskstatus.set(None);
+    // });
+    // use_effect(move || {
+    //     tasktype.set(None);
+    // });
+    // use_effect(move || {
+    //     query.set(None);
+    // });
+    // use_effect(move || {
+    //     trigger.set(false);
+    // });
+
+    use_effect(move || {
+        if reset() {
+            taskstatus.set(None);
+            tasktype.set(None);
+            query.set(None);
+            trigger.set(false);
+        }
+    });
 
     rsx! {
         div { style: GLOBAL_PADDING,
@@ -23,37 +47,58 @@ pub fn Dashboard() -> Element {
                 placeholder: "Enter an MD5 hash, 0x address, or task ID",
                 input_handler: query,
                 trigger_handler: trigger,
+                reset_handler: reset,
                 sel1: tasktype,
                 sel2: taskstatus,
             }
         }
+        ProverTaskTables {}
         if trigger() {
-            TaskTables { inps: (query(), tasktype(), taskstatus()) }
+            ConciseTaskTables { inps: (query(), tasktype(), taskstatus()) }
         } else {
-            { tracing::info!("UnTriggered"); }
-            TaskTables { inps: (None, None, None) }
+            {
+                tracing::info!("UnTriggered");
+            }
+            ConciseTaskTables { inps: (None, None, None) }
         }
+        AutoSubmitTaskTables {}
         TaskSummary {}
     }
 }
 
-impl SearchSelectLike for Signal<Option<TaskType>> {
-    fn onchange(&mut self, evt: Event<FormData>) {
-        self.set(match evt.value().as_str() {
+impl SearchSelectLike for Option<TaskType> {
+    fn onchange(signal: &mut Signal<Self>, evt: Event<FormData>) {
+        signal.set(match evt.value().as_str() {
             "Setup" => Some(TaskType::Setup),
+            "Reset" => Some(TaskType::Reset),
             "Prove" => Some(TaskType::Prove),
             _ => None,
         })
     }
 
     fn options(&self) -> Vec<&str> {
-        vec!["All", "Setup", "Prove", "Deploy"]
+        vec!["All", "Setup", "Reset", "Prove"]
+    }
+
+    fn is_some(&self) -> bool {
+        self.is_some()
+    }
+
+    fn read(&self) -> &str {
+        self.options()[match self {
+            None => 0,
+            Some(it) => match it {
+                TaskType::Setup => 1,
+                TaskType::Reset => 2,
+                TaskType::Prove => 3,
+            },
+        }]
     }
 }
 
-impl SearchSelectLike for Signal<Option<TaskStatus>> {
-    fn onchange(&mut self, evt: Event<FormData>) {
-        self.set(match evt.value().as_str() {
+impl SearchSelectLike for Option<TaskStatus> {
+    fn onchange(signal: &mut Signal<Self>, evt: Event<FormData>) {
+        signal.set(match evt.value().as_str() {
             "Pending" => Some(TaskStatus::Pending),
             "Processing" => Some(TaskStatus::Processing),
             "Done" => Some(TaskStatus::Done),
@@ -69,10 +114,32 @@ impl SearchSelectLike for Signal<Option<TaskStatus>> {
             "All",
             "Pending",
             "Processing",
+            "DryRunSuccess",
+            "DryRunFailed",
             "Done",
             "Fail",
             "Unprovable",
-            "DryRunFailed",
+            "Stale",
         ]
+    }
+
+    fn is_some(&self) -> bool {
+        self.is_some()
+    }
+
+    fn read(&self) -> &str {
+        self.options()[match self {
+            None => 0,
+            Some(it) => match it {
+                TaskStatus::Pending => 1,
+                TaskStatus::Processing => 2,
+                TaskStatus::DryRunSuccess => 3,
+                TaskStatus::DryRunFailed => 4,
+                TaskStatus::Done => 5,
+                TaskStatus::Fail => 6,
+                TaskStatus::Unprovable => 7,
+                TaskStatus::Stale => 8,
+            },
+        }]
     }
 }

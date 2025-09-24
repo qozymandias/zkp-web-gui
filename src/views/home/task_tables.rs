@@ -269,10 +269,22 @@ impl PaginatedTableLike for Vec<Round2Info> {
 }
 
 #[component]
-pub fn TaskTables(inps: <Vec<ConciseTask> as PaginatedTableLike>::Inputs) -> Element {
+pub fn ProverTaskTables() -> Element {
+    rsx! {
+        PaginatedTable::<Vec<ProverNode>> {}
+    }
+}
+
+#[component]
+pub fn ConciseTaskTables(inps: <Vec<ConciseTask> as PaginatedTableLike>::Inputs) -> Element {
     rsx! {
         PaginatedTable::<Vec<ConciseTask>> { inps }
-        PaginatedTable::<Vec<ProverNode>> {}
+    }
+}
+
+#[component]
+pub fn AutoSubmitTaskTables() -> Element {
+    rsx! {
         PaginatedTable::<Vec<AutoSubmitProof>> {}
         PaginatedTable::<Vec<Round1Info>> {}
         PaginatedTable::<Vec<Round2Info>> {}
