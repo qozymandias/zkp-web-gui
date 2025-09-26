@@ -74,7 +74,7 @@ pub fn Search<U: SearchSelectLike + PartialEq + Clone + 'static, V: SearchSelect
                 }
                 button {
                     onclick: move |_| async move {
-                        trigger_handler.set(true);
+                        trigger_handler.set(!trigger_handler());
                     },
                     "Search"
                 }

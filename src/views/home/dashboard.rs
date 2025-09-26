@@ -52,16 +52,13 @@ pub fn Dashboard() -> Element {
                 sel2: taskstatus,
             }
         }
-        TaskSummary {}
-        ProverTaskTables {}
         if trigger() {
             ConciseTaskTables { inps: (query(), tasktype(), taskstatus()) }
         } else {
-            {
-                tracing::info!("UnTriggered");
-            }
-            ConciseTaskTables { inps: (None, None, None) }
+            { rsx! { ConciseTaskTables { inps: (None, None, None) } } }
         }
+        TaskSummary {}
+        ProverTaskTables {}
         AutoSubmitTaskTables {}
     }
 }
