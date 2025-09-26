@@ -52,6 +52,7 @@ pub fn Dashboard() -> Element {
                 sel2: taskstatus,
             }
         }
+        TaskSummary {}
         ProverTaskTables {}
         if trigger() {
             ConciseTaskTables { inps: (query(), tasktype(), taskstatus()) }
@@ -62,7 +63,6 @@ pub fn Dashboard() -> Element {
             ConciseTaskTables { inps: (None, None, None) }
         }
         AutoSubmitTaskTables {}
-        TaskSummary {}
     }
 }
 

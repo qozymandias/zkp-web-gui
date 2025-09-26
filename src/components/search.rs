@@ -1,6 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_free_icons::icons::io_icons::IoHardwareChipSharp;
-use dioxus_free_icons::Icon;
 
 pub trait SearchSelectLike {
     fn onchange(signal: &mut Signal<Self>, evt: Event<FormData>)
