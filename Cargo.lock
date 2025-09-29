@@ -7913,7 +7913,7 @@ dependencies = [
 [[package]]
 name = "zkp-service-helper"
 version = "0.1.0"
-source = "git+https://github.com/qozymandias/zkp-service-helper.git#f4f8b98f92240638eea0b01030ea17252271551c"
+source = "git+https://github.com/qozymandias/zkp-service-helper.git#f706756d11c9d118df76050a8274d4bf32c2d1ca"
 dependencies = [
  "anyhow",
  "ethers",

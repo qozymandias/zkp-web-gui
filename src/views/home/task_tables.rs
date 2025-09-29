@@ -1,16 +1,15 @@
-use std::future::Future;
-use std::pin::Pin;
-
 use dioxus::prelude::*;
 use zkp_service_helper::interface::AutoSubmitProof;
 use zkp_service_helper::interface::ConciseTask;
-use zkp_service_helper::interface::PaginationResult;
 use zkp_service_helper::interface::ProverNode;
 use zkp_service_helper::interface::Round1Info;
 use zkp_service_helper::interface::Round2Info;
+use zkp_service_helper::interface::TaskStatus;
+use zkp_service_helper::interface::TaskType;
 
 use crate::components::table::PaginatedTable;
 use crate::components::table::PaginatedTableLike;
+use crate::components::table::PaginatedTableNoInputs;
 use crate::components::table::TableLike;
 use crate::utils::serde_to_string;
 use crate::utils::AddressKind;
@@ -67,11 +66,10 @@ impl PaginatedTableLike for Vec<ProverNode> {
         5
     }
 
-    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
-        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<ProverNode>>>>> {
+    fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut> {
+        Box::new(move |page: u64, per: u64, _: Option<Self::Inputs>| {
             Box::pin(async move { ZKH.query_node_statistics(None, Some(page), Some(per)).await.unwrap_or_empty() })
-        }
-        fetch
+        })
     }
 }
 
@@ -108,19 +106,36 @@ impl TableLike for Vec<ConciseTask> {
 }
 
 impl PaginatedTableLike for Vec<ConciseTask> {
+    type Inputs = (Option<String>, Option<TaskType>, Option<TaskStatus>);
+
     fn n_per_paginated() -> u64 {
         10
     }
-
-    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
-        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<ConciseTask>>>>> {
+    fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut> {
+        Box::new(move |page: u64, per: u64, inps: Option<Self::Inputs>| {
             Box::pin(async move {
-                ZKH.query_concise_tasks(None, None, None, None, None, Some(page), Some(per))
+                let query = inps.as_ref().and_then(|it| it.0.clone());
+                let tasktype = inps.as_ref().and_then(|it| it.1.clone());
+                let status = inps.as_ref().and_then(|it| it.2.clone());
+
+                let mut user_address = None;
+                let mut md5 = None;
+                let mut id = None;
+                if let Some(q) = query {
+                    if q.len() == 42 && q.starts_with("0x") {
+                        user_address = Some(q);
+                    } else if q.len() == 32 {
+                        md5 = Some(q);
+                    } else if q.len() == 24 {
+                        id = Some(q);
+                    }
+                }
+
+                ZKH.query_concise_tasks(user_address, md5, id, tasktype, status, Some(page), Some(per))
                     .await
                     .unwrap_or_empty()
             })
-        }
-        fetch
+        })
     }
 }
 
@@ -159,15 +174,14 @@ impl PaginatedTableLike for Vec<AutoSubmitProof> {
         5
     }
 
-    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
-        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<AutoSubmitProof>>>>> {
+    fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut> {
+        Box::new(move |page: u64, per: u64, _: Option<Self::Inputs>| {
             Box::pin(async move {
                 ZKH.query_auto_submit_proofs(None, None, None, None, None, Some(page), Some(per))
                     .await
                     .unwrap_or_empty()
             })
-        }
-        fetch
+        })
     }
 }
 
@@ -206,15 +220,14 @@ impl PaginatedTableLike for Vec<Round1Info> {
         5
     }
 
-    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
-        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<Round1Info>>>>> {
+    fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut> {
+        Box::new(move |page: u64, per: u64, _: Option<Self::Inputs>| {
             Box::pin(async move {
                 ZKH.query_round1_info(None, None, None, None, None, None, Some(page), Some(per))
                     .await
                     .unwrap_or_empty()
             })
-        }
-        fetch
+        })
     }
 }
 
@@ -245,25 +258,36 @@ impl PaginatedTableLike for Vec<Round2Info> {
         5
     }
 
-    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut {
-        fn fetch(page: u64, per: u64) -> Pin<Box<dyn Future<Output = PaginationResult<Vec<Round2Info>>>>> {
+    fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut> {
+        Box::new(move |page: u64, per: u64, _: Option<Self::Inputs>| {
             Box::pin(async move {
                 ZKH.query_round2_info(None, None, None, None, None, Some(page), Some(per))
                     .await
                     .unwrap_or_empty()
             })
-        }
-        fetch
+        })
     }
 }
 
 #[component]
-pub fn TaskTables() -> Element {
+pub fn ProverTaskTables() -> Element {
     rsx! {
-        PaginatedTable::<Vec<ProverNode>> {}
-        PaginatedTable::<Vec<ConciseTask>> {}
-        PaginatedTable::<Vec<AutoSubmitProof>> {}
-        PaginatedTable::<Vec<Round1Info>> {}
-        PaginatedTable::<Vec<Round2Info>> {}
+        PaginatedTableNoInputs::<Vec<ProverNode>> {}
+    }
+}
+
+#[component]
+pub fn ConciseTaskTables(inputs: Memo<Option<<Vec<ConciseTask> as PaginatedTableLike>::Inputs>>) -> Element {
+    rsx! {
+        PaginatedTable::<Vec<ConciseTask>> { inputs }
+    }
+}
+
+#[component]
+pub fn AutoSubmitTaskTables() -> Element {
+    rsx! {
+        PaginatedTableNoInputs::<Vec<AutoSubmitProof>> {}
+        PaginatedTableNoInputs::<Vec<Round1Info>> {}
+        PaginatedTableNoInputs::<Vec<Round2Info>> {}
     }
 }

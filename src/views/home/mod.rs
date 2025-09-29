@@ -1,7 +1,9 @@
 pub mod dashboard;
 
 mod task_tables;
-pub(super) use task_tables::TaskTables;
+pub(super) use task_tables::AutoSubmitTaskTables;
+pub(super) use task_tables::ConciseTaskTables;
+pub(super) use task_tables::ProverTaskTables;
 
 mod task_summary;
 pub(super) use task_summary::TaskSummary;

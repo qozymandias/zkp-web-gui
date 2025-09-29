@@ -110,6 +110,8 @@ impl PaginationHandler {
 }
 
 pub trait PaginatedTableLike: TableLike + Serialize + Clone + PartialEq + 'static {
+    type Inputs: Clone + PartialEq + Serialize + 'static = ();
+
     type Data: TableLike + Serialize + Clone + PartialEq + 'static = Self;
 
     type Fut: Future<Output = PaginationResult<Self::Data>> + 'static =
@@ -117,17 +119,22 @@ pub trait PaginatedTableLike: TableLike + Serialize + Clone + PartialEq + 'stati
 
     fn n_per_paginated() -> u64;
 
-    fn query_function() -> fn(page: u64, per: u64) -> Self::Fut;
+    fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut>;
 
-    fn paginated_table_handler(n: u64, future: fn(u64, u64) -> Self::Fut) -> Element {
+    fn paginated_table_handler(
+        n: u64,
+        inps: Memo<Option<Self::Inputs>>,
+        future: Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut>,
+    ) -> Element {
         let curr = use_signal(|| 0u64);
-        let resource = use_resource(move || async move { future(curr() * n, n).await });
+        let future = std::rc::Rc::new(future);
+        let resource = use_resource(move || {
+            let fut = future.clone();
+            async move { fut(curr() * n, n, inps()).await }
+        });
         let loaded_resource = match resource.state().cloned() {
             UseResourceState::Ready => Some(resource.value().unwrap()),
-            _ => {
-                tracing::info!("Loading ... ");
-                None
-            }
+            _ => None,
         };
 
         rsx! {
@@ -142,8 +149,16 @@ pub trait PaginatedTableLike: TableLike + Serialize + Clone + PartialEq + 'stati
 }
 
 #[component]
-pub fn PaginatedTable<T: PaginatedTableLike + PartialEq + Clone + 'static>() -> Element {
+pub fn PaginatedTable<T: PaginatedTableLike + PartialEq + Clone + 'static>(inputs: Memo<Option<T::Inputs>>) -> Element {
     rsx! {
-        {T::paginated_table_handler(T::n_per_paginated(), T::query_function())}
+        {T::paginated_table_handler(T::n_per_paginated(), inputs, T::query_function())}
+    }
+}
+
+#[component]
+pub fn PaginatedTableNoInputs<T: PaginatedTableLike + PartialEq + Clone + 'static>() -> Element {
+    let inps = use_memo(|| Option::<T::Inputs>::None);
+    rsx! {
+        {T::paginated_table_handler(T::n_per_paginated(), inps, T::query_function())}
     }
 }

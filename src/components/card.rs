@@ -1,7 +1,5 @@
 use dioxus::prelude::*;
 
-use crate::GLOBAL_PADDING;
-
 #[component]
 pub fn Card(
     header: String,

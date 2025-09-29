@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use zkp_service_helper::interface::ProverNode;
+use zkp_service_helper::interface::ProverNodeTimeRange;
 use zkp_service_helper::interface::ProverNodeTimeRangeStats;
+use zkp_service_helper::interface::ProverNodeTimeRangeStatsParams;
 
 use crate::components::card::EntryListCard;
 use crate::components::card::EntryListLike;
@@ -268,10 +270,17 @@ pub fn NodeDetails(id: String) -> Element {
         let then = now - web_time::Duration::from_secs(4 * 7 * 24 * 60 * 60);
         async move {
             stats.set(
-                ZKH.query_prover_node_timerange_stats(address, webtime_to_rfc3339(then), webtime_to_rfc3339(now))
-                    .await
-                    .inspect_err(|e| tracing::error!("{e}"))
-                    .ok(),
+                ZKH.query_prover_node_timerange_stats(ProverNodeTimeRangeStatsParams {
+                    ranges: vec![ProverNodeTimeRange {
+                        address,
+                        start: webtime_to_rfc3339(then),
+                        end: webtime_to_rfc3339(now),
+                    }],
+                })
+                .await
+                .inspect_err(|e| tracing::error!("{e}"))
+                .ok()
+                .and_then(|it| it.first().cloned()),
             );
         }
     });
