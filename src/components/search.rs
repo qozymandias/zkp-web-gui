@@ -1,24 +1,34 @@
 use dioxus::prelude::*;
 
-pub trait SearchSelectLike {
-    fn onchange(signal: &mut Signal<Self>, evt: Event<FormData>)
-    where
-        Self: Sized;
+pub trait SearchSelectLike: Sized {
+    fn raw_options() -> Vec<Self>;
 
-    fn reset_to_default(signal: &mut Signal<Self>)
-    where
-        Self: Sized;
+    fn to_string(it: &Self) -> String;
 
-    fn options(&self) -> Vec<&str>;
+    fn from_string(it: String) -> Self;
 
-    fn is_some(&self) -> bool;
+    fn all() -> &'static str {
+        "All"
+    }
 
-    fn read(&self) -> &str;
+    fn options() -> Vec<String> {
+        [
+            vec![Self::all().to_string()],
+            Self::raw_options().iter().map(Self::to_string).collect(),
+        ]
+        .concat()
+    }
 
-    fn selector_options(&self) -> Element {
+    fn read(it: &Option<Self>) -> String {
+        it.as_ref().map(Self::to_string).unwrap_or(Self::all().to_string())
+    }
+}
+
+trait SearchSelectRender: SearchSelectLike {
+    fn selector_options() -> Element {
         rsx! {
             {
-                self.options()
+                Self::options()
                     .into_iter()
                     .map(|it| {
                         rsx! {
@@ -30,23 +40,41 @@ pub trait SearchSelectLike {
     }
 }
 
+impl<T: SearchSelectLike> SearchSelectRender for T {}
+
+trait SearchSelectSignals: SearchSelectLike {
+    fn onchange(signal: &mut Signal<Option<Self>>, evt: Event<FormData>) {
+        let str = evt.value();
+        signal.set(if str == Self::all() {
+            None
+        } else {
+            Some(Self::from_string(str))
+        })
+    }
+}
+
+impl<T: SearchSelectLike> SearchSelectSignals for T {}
+
 #[component]
-pub fn Search<U: SearchSelectLike + PartialEq + Clone + 'static, V: SearchSelectLike + PartialEq + Clone + 'static>(
+pub fn Search<
+    U: SearchSelectLike + SearchSelectRender + SearchSelectSignals + PartialEq + Clone + 'static,
+    V: SearchSelectLike + SearchSelectRender + SearchSelectSignals + PartialEq + Clone + 'static,
+>(
     title: String,
     placeholder: String,
-    input_handler: Signal<Option<String>>,
-    trigger_handler: Signal<bool>,
-    sel1: Signal<U>,
-    sel2: Signal<V>,
+    input: Signal<Option<String>>,
+    trigger: Signal<bool>,
+    sel1: Signal<Option<U>>,
+    sel2: Signal<Option<V>>,
 ) -> Element {
     let mut reset = use_signal(|| false);
 
     use_effect(move || {
         if reset() {
-            input_handler.set(None);
-            trigger_handler.set(false);
-            U::reset_to_default(&mut sel1);
-            V::reset_to_default(&mut sel2);
+            input.set(None);
+            trigger.set(false);
+            sel1.set(None);
+            sel2.set(None);
         }
     });
 
@@ -56,7 +84,7 @@ pub fn Search<U: SearchSelectLike + PartialEq + Clone + 'static, V: SearchSelect
             div { id: "search-header",
                 h1 { {title} }
                 div {
-                    if input_handler().is_some() || sel1().is_some() || sel2().is_some() {
+                    if input().is_some() || sel1().is_some() || sel2().is_some() {
                         button {
                             onclick: move |_| async move {
                                 reset.set(true);
@@ -65,31 +93,31 @@ pub fn Search<U: SearchSelectLike + PartialEq + Clone + 'static, V: SearchSelect
                         }
                     }
                     select {
-                        value: sel1().read(),
+                        value: U::read(&sel1()),
                         autocomplete: "off",
                         onchange: move |evt| U::onchange(&mut sel1, evt),
-                        {sel1().selector_options()}
+                        {U::selector_options()}
                     }
                     select {
-                        value: sel2().read(),
+                        value: V::read(&sel2()),
                         autocomplete: "off",
                         onchange: move |evt| V::onchange(&mut sel2, evt),
-                        {sel2().selector_options()}
+                        {V::selector_options()}
                     }
                 }
             }
             div { id: "search",
                 input {
                     placeholder,
-                    value: "{input_handler().unwrap_or_default()}",
+                    value: input().unwrap_or_default(),
                     autocomplete: "off",
                     oninput: move |event| async move {
-                        input_handler.set(Some(event.value()));
+                        input.set(Some(event.value()));
                     },
                 }
                 button {
                     onclick: move |_| async move {
-                        trigger_handler.set(true);
+                        trigger.set(true);
                     },
                     "Search"
                 }

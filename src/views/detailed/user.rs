@@ -6,8 +6,8 @@ use zkp_service_helper::interface::User;
 use crate::components::card::EntryListCard;
 use crate::components::card::EntryListLike;
 use crate::components::table::Table;
+use crate::utils::enum_to_string;
 use crate::utils::hex_to_num_string;
-use crate::utils::serde_to_string;
 use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
 use crate::utils::UnwrapOrNA;
@@ -51,7 +51,7 @@ impl EntryListLike for DetailedUser {
                 ZkEntry::Raw(
                     self.subscription
                         .as_ref()
-                        .and_then(|it| serde_to_string(&it.status).ok())
+                        .map(|it| enum_to_string(&it.status))
                         .unwrap_or("None".to_string()),
                 ),
             ),

@@ -8,6 +8,8 @@ use super::ProverTaskTables;
 use super::TaskSummary;
 use crate::components::search::Search;
 use crate::components::search::SearchSelectLike;
+use crate::utils::enum_from_string;
+use crate::utils::enum_to_string;
 use crate::GLOBAL_PADDING;
 
 #[component]
@@ -30,107 +32,52 @@ pub fn Dashboard() -> Element {
             Search {
                 title: "The ZKWASM Task Explorer",
                 placeholder: "Enter an MD5 hash, 0x address, or task ID",
-                input_handler: query,
-                trigger_handler: trigger,
+                input: query,
+                trigger,
                 sel1: tasktype,
                 sel2: taskstatus,
             }
         }
-        ConciseTaskTables { inputs }
         TaskSummary {}
         ProverTaskTables {}
+        ConciseTaskTables { inputs }
         AutoSubmitTaskTables {}
     }
 }
 
-impl SearchSelectLike for Option<TaskType> {
-    fn onchange(signal: &mut Signal<Self>, evt: Event<FormData>) {
-        signal.set(match evt.value().as_str() {
-            "Setup" => Some(TaskType::Setup),
-            "Reset" => Some(TaskType::Reset),
-            "Prove" => Some(TaskType::Prove),
-            _ => None,
-        })
+impl SearchSelectLike for TaskType {
+    fn raw_options() -> Vec<Self> {
+        vec![TaskType::Setup, TaskType::Reset, TaskType::Prove]
     }
 
-    fn reset_to_default(signal: &mut Signal<Self>)
-    where
-        Self: Sized,
-    {
-        signal.set(None);
+    fn to_string(it: &Self) -> String {
+        enum_to_string(it)
     }
 
-    fn options(&self) -> Vec<&str> {
-        vec!["All", "Setup", "Reset", "Prove"]
-    }
-
-    fn is_some(&self) -> bool {
-        self.is_some()
-    }
-
-    fn read(&self) -> &str {
-        self.options()[match self {
-            None => 0,
-            Some(it) => match it {
-                TaskType::Setup => 1,
-                TaskType::Reset => 2,
-                TaskType::Prove => 3,
-            },
-        }]
+    fn from_string(it: String) -> Self {
+        enum_from_string(&it)
     }
 }
 
-impl SearchSelectLike for Option<TaskStatus> {
-    fn onchange(signal: &mut Signal<Self>, evt: Event<FormData>) {
-        signal.set(match evt.value().as_str() {
-            "Pending" => Some(TaskStatus::Pending),
-            "Processing" => Some(TaskStatus::Processing),
-            "Done" => Some(TaskStatus::Done),
-            "Fail" => Some(TaskStatus::Fail),
-            "Unprovable" => Some(TaskStatus::Unprovable),
-            "DryRunFailed" => Some(TaskStatus::DryRunFailed),
-            _ => None,
-        })
-    }
-
-    fn reset_to_default(signal: &mut Signal<Self>)
-    where
-        Self: Sized,
-    {
-        signal.set(None);
-    }
-
-    fn options(&self) -> Vec<&str> {
+impl SearchSelectLike for TaskStatus {
+    fn raw_options() -> Vec<Self> {
         vec![
-            "All",
-            "Pending",
-            "Processing",
-            "DryRunSuccess",
-            "DryRunFailed",
-            "Done",
-            "Fail",
-            "Unprovable",
-            "Stale",
+            TaskStatus::Pending,
+            TaskStatus::Processing,
+            TaskStatus::DryRunSuccess,
+            TaskStatus::DryRunFailed,
+            TaskStatus::Done,
+            TaskStatus::Fail,
+            TaskStatus::Unprovable,
+            TaskStatus::Stale,
         ]
     }
 
-    fn is_some(&self) -> bool {
-        self.is_some()
+    fn to_string(it: &Self) -> String {
+        enum_to_string(it)
     }
 
-    fn read(&self) -> &str {
-        self.options()[match self {
-            None => 0,
-            Some(it) => match it {
-                TaskStatus::Pending => 1,
-                TaskStatus::Processing => 2,
-                TaskStatus::DryRunSuccess => 3,
-                TaskStatus::DryRunFailed => 4,
-                TaskStatus::Done => 5,
-                TaskStatus::Fail => 6,
-                TaskStatus::Unprovable => 7,
-                TaskStatus::Stale => 8,
-            },
-        }]
+    fn from_string(it: String) -> Self {
+        enum_from_string(&it)
     }
 }

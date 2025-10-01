@@ -11,7 +11,7 @@ use crate::components::table::PaginatedTable;
 use crate::components::table::PaginatedTableLike;
 use crate::components::table::PaginatedTableNoInputs;
 use crate::components::table::TableLike;
-use crate::utils::serde_to_string;
+use crate::utils::enum_to_string;
 use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
 use crate::utils::TimestampStyle;
@@ -159,7 +159,7 @@ impl TableLike for Vec<AutoSubmitProof> {
             .map(|row| {
                 vec![
                     ZkEntry::MaybeAddress(row._id.clone().map(|it| it.oid), AddressStyle::Dashboard, AddressKind::Task),
-                    ZkEntry::Raw(serde_to_string(&row.status).ok().unwrap_or_na()),
+                    ZkEntry::Raw(enum_to_string(&row.status)),
                     ZkEntry::Timestamp(row.batch_started.clone(), TimestampStyle::Full),
                     ZkEntry::Raw(row.auto_submit_network_chain_id.to_string()),
                     ZkEntry::Timestamp(row.batch_finished.clone(), TimestampStyle::Full),
@@ -205,7 +205,7 @@ impl TableLike for Vec<Round1Info> {
             .map(|row| {
                 vec![
                     ZkEntry::MaybeAddress(row._id.clone().map(|it| it.oid), AddressStyle::Dashboard, AddressKind::Task),
-                    ZkEntry::Raw(serde_to_string(&row.status).ok().unwrap_or_na()),
+                    ZkEntry::Raw(enum_to_string(&row.status)),
                     ZkEntry::Timestamp(row.batch_started.clone(), TimestampStyle::Full),
                     ZkEntry::Raw(row.auto_submit_network_chain_id.to_string()),
                     ZkEntry::Timestamp(row.batch_finished.clone(), TimestampStyle::Full),

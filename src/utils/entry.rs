@@ -1,12 +1,11 @@
 use crate::components::card::EntryLike;
 use crate::utils::bytes_to_bigint;
-use crate::utils::serde_to_string;
+use crate::utils::enum_to_string;
 use crate::utils::shorten_address;
 use crate::utils::shorten_md5;
 use crate::utils::task_status_to_background_color;
 use crate::utils::timestamp_formatted;
 use crate::utils::TimestampStyle;
-use crate::utils::UnwrapOrNA;
 use dioxus::prelude::*;
 use zkp_service_helper::interface::ImageChecksum;
 use zkp_service_helper::interface::TaskStatus;
@@ -170,11 +169,11 @@ impl EntryLike for ZkEntry {
                     div {
                         class: "status-rounded-box",
                         background_color: task_status_to_background_color(cell),
-                        {serde_to_string(&cell).ok().unwrap_or_na()}
+                        {enum_to_string(&cell)}
                     }
                 }
             }
-            Self::TaskType(cell) => Self::Raw(serde_to_string(&cell).ok().unwrap_or_na()).into_cell(),
+            Self::TaskType(cell) => Self::Raw(enum_to_string(&cell)).into_cell(),
         }
     }
 }

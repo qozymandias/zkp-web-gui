@@ -6,7 +6,7 @@ use crate::components::card::EntryListCard;
 use crate::components::card::EntryListLike;
 use crate::utils::bytes_to_num_string;
 use crate::utils::calc_processing_time_secs;
-use crate::utils::serde_to_string;
+use crate::utils::enum_to_string;
 use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
 use crate::utils::TimestampStyle;
@@ -71,20 +71,13 @@ impl EntryListLike for Option<Task> {
                     ),
                     (
                         "Proof Submit Mode",
-                        ZkEntry::Raw(
-                            serde_to_string(it.proof_submit_mode.as_ref().unwrap_or(&ProofSubmitMode::Manual))
-                                .ok()
-                                .unwrap_or_na(),
-                        ),
+                        ZkEntry::Raw(enum_to_string(
+                            it.proof_submit_mode.as_ref().unwrap_or(&ProofSubmitMode::Manual),
+                        )),
                     ),
                     (
                         "Current Batch Status",
-                        ZkEntry::Raw(
-                            it.auto_submit_status
-                                .as_ref()
-                                .and_then(|it| serde_to_string(it).ok())
-                                .unwrap_or_na(),
-                        ),
+                        ZkEntry::Raw(it.auto_submit_status.as_ref().map(enum_to_string).unwrap_or_na()),
                     ),
                     ("Public Inputs", ZkEntry::LongInput(it.public_inputs.clone())),
                     ("Witness", ZkEntry::LongInput(it.private_inputs.clone())),

@@ -6,7 +6,7 @@ use zkp_service_helper::interface::ProverNodeTimeRangeStatsParams;
 
 use crate::components::card::EntryListCard;
 use crate::components::card::EntryListLike;
-use crate::utils::serde_to_string;
+use crate::utils::enum_to_string;
 use crate::utils::webtime_to_rfc3339;
 use crate::utils::AddressKind;
 use crate::utils::AddressStyle;
@@ -42,10 +42,7 @@ impl EntryListLike for GeneralNodeDetails {
                 "Latest Node Version Used",
                 ZkEntry::Raw(node.version_info.as_ref().map(|it| it.version.clone()).unwrap_or_na()),
             ),
-            (
-                "Prover Level",
-                ZkEntry::Raw(serde_to_string(&node.prover_level).ok().unwrap_or_na()),
-            ),
+            ("Prover Level", ZkEntry::Raw(enum_to_string(&node.prover_level))),
             (
                 "Status",
                 ZkEntry::Raw(

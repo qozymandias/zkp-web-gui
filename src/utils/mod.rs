@@ -1,4 +1,3 @@
-use serde::Serialize;
 use zkp_service_helper::interface::PaginationResult;
 use zkp_service_helper::interface::TaskStatus;
 
@@ -21,11 +20,11 @@ impl UnwrapOrNA for Option<String> {
     }
 }
 
-pub trait UnwrapOrEmpty<T: Serialize> {
+pub trait UnwrapOrEmpty<T: serde::Serialize> {
     fn unwrap_or_empty(self) -> PaginationResult<Vec<T>>;
 }
 
-impl<T: Serialize> UnwrapOrEmpty<T> for anyhow::Result<PaginationResult<Vec<T>>> {
+impl<T: serde::Serialize> UnwrapOrEmpty<T> for anyhow::Result<PaginationResult<Vec<T>>> {
     fn unwrap_or_empty(self) -> PaginationResult<Vec<T>> {
         self.unwrap_or_else(|e| {
             tracing::error!("{e}");
@@ -135,15 +134,14 @@ pub fn task_status_to_background_color(status: TaskStatus) -> &'static str {
     }
 }
 
-pub fn serde_to_string<T: serde::Serialize>(obj: &T) -> anyhow::Result<String> {
-    Ok(match serde_json::to_value(obj)? {
-        serde_json::Value::Null => "Null".to_string(),
-        serde_json::Value::Bool(v) => v.to_string(),
-        serde_json::Value::Number(v) => v.to_string(),
-        serde_json::Value::String(v) => v,
-        serde_json::Value::Array(vs) => vs
-            .iter()
-            .fold(String::new(), |acc, it| acc + "," + &serde_to_string(it).unwrap_or_default()),
-        _ => return Err(anyhow::anyhow!("Must be primitive object type")),
-    })
+pub fn enum_to_string<T: serde::Serialize>(obj: &T) -> String {
+    serde_json::to_string(obj)
+        .expect("Enum object should Serialize")
+        .trim_start_matches('"')
+        .trim_end_matches('"')
+        .to_string()
+}
+
+pub fn enum_from_string<T: serde::de::DeserializeOwned>(str: &str) -> T {
+    serde_json::from_str::<T>(&format!("\"{str}\"")).expect("Enum string should Deserialize")
 }
