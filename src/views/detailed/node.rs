@@ -244,6 +244,7 @@ fn make_node_details_div<U: EntryListLike + PartialEq + Clone + 'static>(data: U
 pub fn NodeDetails(id: String) -> Element {
     tracing::info!("Node detail loading {id}");
 
+    // TODO: make trait like QueryFunctionHandler
     let mut node = use_signal(|| Option::<ProverNode>::None);
     let id_for_node = id.clone();
     use_future(move || {

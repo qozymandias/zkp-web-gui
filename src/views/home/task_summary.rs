@@ -11,14 +11,11 @@ use crate::utils::QueryFunctionHandler;
 use crate::utils::TimestampStyle;
 use crate::utils::ZkEntry;
 use crate::views::home::StatsSummary;
+use crate::GLOBAL_PADDING;
 use crate::ZKH;
 
 impl QueryFunctionHandler for StatisticsInfo {
     type Data = Option<Self>;
-
-    fn init_state() -> Self::Data {
-        None
-    }
 
     async fn query(_: ()) -> anyhow::Result<Self::Data> {
         ZKH.query_statistics().await.map(Some)
@@ -33,10 +30,6 @@ struct ConciseTaskSummary {
 impl QueryFunctionHandler for ConciseTaskSummary {
     type Input = TaskType;
     type Data = Vec<ConciseTask>;
-
-    fn init_state() -> Self::Data {
-        vec![]
-    }
 
     async fn query(inp: TaskType) -> anyhow::Result<Self::Data> {
         ZKH.query_concise_tasks(None, None, None, Some(inp), None, None, Some(5))
@@ -71,13 +64,14 @@ pub fn TaskSummary() -> Element {
 
     rsx! {
         StatsSummary { data: stats() }
-        div { id: "adjacent-task-summaries", style: "padding: 0rem 4rem;",
+        div { id: "adjacent-task-summaries", style: GLOBAL_PADDING,
             SummaryCard {
                 data: ConciseTaskSummary {
                     data: setups(),
                 },
                 header: "Latest Setups",
                 header_class: "aqua",
+                div_style: "padding: 0rem 0.5rem 0rem 0rem;",
             }
             SummaryCard {
                 data: ConciseTaskSummary {
@@ -85,6 +79,7 @@ pub fn TaskSummary() -> Element {
                 },
                 header: "Latest Proofs",
                 header_class: "light-blue",
+                div_style: "padding: 0rem 0rem 0rem 0.5rem;",
             }
         }
     }

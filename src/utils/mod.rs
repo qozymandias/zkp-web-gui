@@ -126,9 +126,9 @@ pub fn task_status_to_background_color(status: TaskStatus) -> &'static str {
         TaskStatus::Pending => "#CA9B00",
         TaskStatus::Processing => "#CA9B00",
         TaskStatus::DryRunSuccess => "#CA9B00",
-        TaskStatus::DryRunFailed => "#DD6B00",
+        TaskStatus::DryRunFailed => "#CA9B00",
         TaskStatus::Done => "#3E8166",
-        TaskStatus::Fail => "#2C3841",
+        TaskStatus::Fail => "#DD6B00",
         TaskStatus::Unprovable => "#894E50",
         TaskStatus::Stale => "#636363",
     }

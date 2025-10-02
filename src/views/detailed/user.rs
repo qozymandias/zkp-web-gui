@@ -67,6 +67,7 @@ impl EntryListLike for DetailedUser {
 pub fn UserDetails(id: String) -> Element {
     tracing::info!("User detail loading {id}");
 
+    // TODO: make trait like QueryFunctionHandler
     let id_for_user = id.clone();
     let mut user = use_signal(|| Option::<User>::None);
     use_future(move || {

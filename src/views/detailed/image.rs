@@ -112,6 +112,7 @@ impl EntryListLike for Option<DetailedImage> {
 pub fn ImageDetails(id: String) -> Element {
     tracing::info!("Image detail loading {id}");
 
+    // TODO: make a trait for these to impl like QueryFunctionHandler
     let md5 = id.clone();
     let mut config = use_signal(|| Option::<AppConfig>::None);
     use_future(move || async move {

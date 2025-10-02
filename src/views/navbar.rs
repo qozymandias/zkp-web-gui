@@ -18,6 +18,7 @@ pub fn Navbar() -> Element {
                 button { id: "nav-button", onclick: move |_| add_prove.set(true), "Submit Prove Task" }
             }
         }
+        // TODO: make these proper components
         if add_image() {
             div { id: "popup-overlay",
                 div { id: "popup-content",

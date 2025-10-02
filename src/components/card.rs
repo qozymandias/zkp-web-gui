@@ -96,11 +96,12 @@ pub fn SummaryCard<U: SummaryCardLike + PartialEq + Clone + 'static>(
     data: U,
     header: String,
     header_class: Option<String>,
+    div_style: String,
 ) -> Element {
     let entries = data.entries();
 
     rsx! {
-        div { style: "padding: 0rem 1rem;",
+        div { style: div_style,
             Card {
                 header,
                 header_class,

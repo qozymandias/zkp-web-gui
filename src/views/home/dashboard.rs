@@ -8,8 +8,6 @@ use super::ProverTaskTables;
 use super::TaskSummary;
 use crate::components::search::Search;
 use crate::components::search::SearchSelectLike;
-use crate::utils::enum_from_string;
-use crate::utils::enum_to_string;
 use crate::GLOBAL_PADDING;
 
 #[component]
@@ -45,18 +43,24 @@ pub fn Dashboard() -> Element {
     }
 }
 
+macro_rules! enum_string_conversions {
+    () => {
+        fn to_string(it: &Self) -> String {
+            $crate::utils::enum_to_string(it)
+        }
+
+        fn from_string(it: String) -> Self {
+            $crate::utils::enum_from_string(&it)
+        }
+    };
+}
+
 impl SearchSelectLike for TaskType {
     fn raw_options() -> Vec<Self> {
         vec![TaskType::Setup, TaskType::Reset, TaskType::Prove]
     }
 
-    fn to_string(it: &Self) -> String {
-        enum_to_string(it)
-    }
-
-    fn from_string(it: String) -> Self {
-        enum_from_string(&it)
-    }
+    enum_string_conversions!();
 }
 
 impl SearchSelectLike for TaskStatus {
@@ -73,11 +77,5 @@ impl SearchSelectLike for TaskStatus {
         ]
     }
 
-    fn to_string(it: &Self) -> String {
-        enum_to_string(it)
-    }
-
-    fn from_string(it: String) -> Self {
-        enum_from_string(&it)
-    }
+    enum_string_conversions!();
 }

@@ -111,6 +111,7 @@ impl PaginatedTableLike for Vec<ConciseTask> {
     fn n_per_paginated() -> u64 {
         10
     }
+
     fn query_function() -> Box<dyn Fn(u64, u64, Option<Self::Inputs>) -> Self::Fut> {
         Box::new(move |page: u64, per: u64, inps: Option<Self::Inputs>| {
             Box::pin(async move {
@@ -232,6 +233,7 @@ impl PaginatedTableLike for Vec<Round1Info> {
 }
 
 impl TableLike for Vec<Round2Info> {
+    // TODO: use macro here to reduce boilerplace eg enum_string_conversions
     fn title(&self) -> &str {
         "Round 2 Proof History"
     }

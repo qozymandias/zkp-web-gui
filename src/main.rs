@@ -18,10 +18,7 @@ mod views;
 pub static ZKH: Lazy<ZkWasmServiceHelper> =
     Lazy::new(|| ZkWasmServiceHelper::new(utils::config::CONFIG.api.url.clone()));
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
-
-const GLOBAL_PADDING: &str = "padding: 0rem 5rem;";
+const GLOBAL_PADDING: &str = "padding: 0rem 7rem;";
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -43,8 +40,8 @@ enum Route {
 fn App() -> Element {
     tracing::info!("ZKP Web App started!");
     rsx! {
-        document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        document::Link { rel: "icon", href: asset!("/assets/favicon.ico") }
+        document::Stylesheet { href: asset!("/assets/styling/main.css") }
         Router::<Route> {}
     }
 }

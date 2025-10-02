@@ -1,8 +1,7 @@
-use std::future::Future;
-use std::pin::Pin;
-
 use dioxus::prelude::*;
 use serde::Serialize;
+use std::future::Future;
+use std::pin::Pin;
 use zkp_service_helper::interface::PaginationResult;
 
 use crate::components::card::EntryLike;
@@ -24,7 +23,7 @@ pub fn Table<T: TableLike + PartialEq + Clone + 'static>(data: T, pagination: Op
 
     rsx! {
         div { style: GLOBAL_PADDING,
-            h1 { "{title}" }
+            h3 { "{title}" }
             table { style: "border-collapse: collapse; width: 100%;",
                 thead {
                     tr {
