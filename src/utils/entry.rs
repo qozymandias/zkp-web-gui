@@ -102,7 +102,7 @@ impl EntryLike for ZkEntry {
                                 match kind {
                                     AddressKind::User => {
                                         match style {
-                                            AddressStyle::Dashboard => shorten_address(addr),
+                                            AddressStyle::Dashboard => shorten_address(&addr),
                                             AddressStyle::Detailed => addr,
                                         }
                                     }

@@ -10,6 +10,8 @@ pub use entry::ZkEntry;
 mod signal;
 pub use signal::QueryFunctionHandler;
 
+pub mod web3_subscriber;
+
 pub trait UnwrapOrNA {
     fn unwrap_or_na(&self) -> String;
 }
@@ -38,7 +40,7 @@ pub fn shorten_md5(it: String) -> String {
     format!("{}...{}", &it[0..7], &it[l - 6..l])
 }
 
-pub fn shorten_address(it: String) -> String {
+pub fn shorten_address(it: &str) -> String {
     let l = it.len();
     format!("{}...{}", &it[0..8], &it[l - 4..l])
 }

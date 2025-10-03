@@ -23,6 +23,9 @@ hex = "0.4.3"
 web-time = "1.1.0"
 num-traits = "0.2.19"
 dioxus-free-icons = { version = "0.9.0", features = ["font-awesome-regular", "ionicons", "lucide"] }
+wasm-bindgen = "0.2.104"
+wasm-bindgen-futures = "0.4.54"
+web-sys = "0.3.81"
 
 [features]
 default = ["web"]
